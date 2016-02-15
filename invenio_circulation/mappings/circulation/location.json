@@ -1,0 +1,23 @@
+{
+    "mappings": {
+        "circulation_location": {
+            "_all": {"enabled": true},
+            "properties": {
+                "uuid": {
+                    "type": "string",
+                    "index": "not_analyzed"},
+                "location": {
+                    "type": "object",
+                    "properties": {
+                        "sublocation_or_collection": {
+                            "type": "string"},
+                        "address": {
+                            "type": "string"},
+                        "nonpublic_notes": {
+                            "type": "string"}
+                    }
+                }
+             }
+         }
+     }
+}

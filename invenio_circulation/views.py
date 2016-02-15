@@ -14,35 +14,37 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Invenio; if not, write to the
-# Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-# MA 02111-1307, USA.
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 #
 # In applying this license, CERN does not
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Invenio module for the circulation of bibliographic items."""
+"""invenio-circulation interface."""
 
-# TODO: This is an example file. Remove it if you do not need it, including
-# the templates and static folders as well as the test case.
-
-from __future__ import absolute_import, print_function
-
-from flask import Blueprint, render_template
-from flask_babelex import gettext as _
-
-blueprint = Blueprint(
-    'invenio_circulation',
-    __name__,
-    template_folder='templates',
-    static_folder='static',
-)
+from flask import Blueprint
 
 
-@blueprint.route("/")
-def index():
-    """Basic view."""
-    return render_template(
-        "invenio_circulation/index.html",
-        module_name=_('Invenio-Circulation'))
+def get_json(pid, rec, template):
+    """Get json representation of requested CirculationObject."""
+    import json
+    return json.dumps(rec)
+
+
+def create_blueprint(endpoints):
+    """Create invenio-circulation blueprint."""
+    from invenio_records_ui.views import create_url_rule
+
+    blueprint = Blueprint(
+        'circulation',
+        __name__,
+        static_folder='./static',
+        template_folder='./templates',
+        url_prefix='',
+    )
+
+    for endpoint, options in (endpoints or {}).items():
+        blueprint.add_url_rule(**create_url_rule(endpoint, **options))
+
+    return blueprint

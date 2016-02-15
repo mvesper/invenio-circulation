@@ -1,0 +1,37 @@
+{
+    "mappings": {
+        "circulation_item": {
+            "_all": {"enabled": true},
+            "properties": {
+                "uuid": {
+                    "type": "string",
+                    "index": "not_analyzed"},
+                "international_standard_book_number": {
+                    "type": "object",
+                    "properties": {
+                        "international_standard_book_number": {
+                            "type": "string",
+                            "index": "not_analyzed"}
+                    }},
+                "item_information_general_information": {
+                    "type": "object",
+                    "properties": {
+                        "piece_designation": {
+                            "type": "string",
+                            "index": "not_analyzed"},
+                        "public_note": {
+                            "type": "string"},
+                        "materials_specified": {
+                            "type": "string"}
+                    }},
+                "local_data": {
+                    "type": "object",
+                    "properties": {
+                        "current_status": {
+                            "type": "string",
+                            "index": "not_analyzed"}
+                    }}
+             }
+         }
+     }
+}

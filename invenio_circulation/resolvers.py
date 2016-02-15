@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2015, 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -22,23 +22,32 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-include *.rst
-include *.sh
-include *.txt
-include *.md
-include LICENSE
-include babel.ini
-include pytest.ini
-include .dockerignore
-include .editorconfig
-include .tx/config
-recursive-include invenio_circulation *.py
-recursive-include invenio_circulation *.json
-recursive-include invenio_circulation *.msg
-recursive-include invenio_circulation *.html
-recursive-include docs *.bat
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs Makefile
-recursive-include examples *.py
-recursive-include tests *.py
+"""Resolve JSON for FundRef funders."""
+
+from __future__ import absolute_import, print_function
+
+from invenio_pidstore.resolver import Resolver
+
+from invenio_circulation.models import CirculationItem, CirculationLoanCycle, \
+        CirculationLocation
+
+
+def _resolver(pid_value, pid_type, getter):
+    resolver = Resolver(pid_type=pid_type, object_type='rec', getter=getter)
+    _, record = resolver.resolve(pid_value)
+    return record
+
+
+def resolve_item(pid_value):
+    """Resolve the JsonRef funder."""
+    return _resolver(pid_value, 'ciritm', CirculationItem.get_record)
+
+
+def resolve_loan_cycle(pid_value):
+    """Resolve the JsonRef funder."""
+    return _resolver(pid_value, 'cirlc', CirculationLoanCycle.get_record)
+
+
+def resolve_location(pid_value):
+    """Resolve the JsonRef funder."""
+    return _resolver(pid_value, 'cirloc', CirculationLocation.get_record)

@@ -22,23 +22,21 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-include *.rst
-include *.sh
-include *.txt
-include *.md
-include LICENSE
-include babel.ini
-include pytest.ini
-include .dockerignore
-include .editorconfig
-include .tx/config
-recursive-include invenio_circulation *.py
-recursive-include invenio_circulation *.json
-recursive-include invenio_circulation *.msg
-recursive-include invenio_circulation *.html
-recursive-include docs *.bat
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs Makefile
-recursive-include examples *.py
-recursive-include tests *.py
+
+"""Module tests."""
+
+import invenio_circulation.api as api
+
+
+def test_email_notification_failure(app):
+    try:
+        api.utils.email_notification('foo', '', '')
+        raise AssertionError("This template name doesn't exist.")
+    except Exception:
+        pass
+
+
+def test_dateexception_failure(app):
+    de = api.utils.DateException(None, None)
+    msg = 'The date is already taken. There are no valid suggestions'
+    assert str(de) == msg

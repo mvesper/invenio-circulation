@@ -1,0 +1,33 @@
+{
+    "type": "object",
+    "title": "Loan Cycle",
+    "properties": {
+        "uuid": {"type": "string"},
+        "local_data": {
+            "type": "object",
+            "properties": {
+                "item": {"$ref": "item.json"},
+                "user": {"type": "object"},
+                "current_status": {"enum": [
+                    "on_loan",
+                    "requested",
+                    "finished",
+                    "canceled"]},
+                "additional_statuses": {"type": "array",
+                                        "items": {"enum": ["overdue"]}},
+                "delivery": {"type": "string"},
+                "group_uuid": {"type": ["string", "null"]},
+                "start_date": {"type": "string",
+                               "format": "date-time"},
+                "end_date": {"type": "string",
+                             "format": "date-time"},
+                "desired_start_date": {"type": "string",
+                                       "format": "date-time"},
+                "desired_end_date": {"type": "string",
+                                     "format": "date-time"},
+                "requested_extension_end_date": {"type": ["string", "null"],
+                                                 "format": "date-time"}
+            }
+        }
+    }
+}

@@ -22,23 +22,25 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-include *.rst
-include *.sh
-include *.txt
-include *.md
-include LICENSE
-include babel.ini
-include pytest.ini
-include .dockerignore
-include .editorconfig
-include .tx/config
-recursive-include invenio_circulation *.py
-recursive-include invenio_circulation *.json
-recursive-include invenio_circulation *.msg
-recursive-include invenio_circulation *.html
-recursive-include docs *.bat
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs Makefile
-recursive-include examples *.py
-recursive-include tests *.py
+
+"""Module tests."""
+
+from __future__ import absolute_import, print_function
+
+import invenio_circulation.api as api
+
+
+def test_location_create(app, db):
+    name = 'CERN Central Library'
+    address = 'address'
+    notes = 'notes'
+    loc = api.location.create(name, address, notes)
+
+    search = app.extensions['invenio-search']
+    search.flush_and_refresh('_all')
+
+    assert loc
+    assert loc['location']
+    assert loc['location']['sublocation_or_collection'] == name
+    assert loc['location']['address'] == address
+    assert loc['location']['nonpublic_notes'] == notes

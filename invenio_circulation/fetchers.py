@@ -22,23 +22,31 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-include *.rst
-include *.sh
-include *.txt
-include *.md
-include LICENSE
-include babel.ini
-include pytest.ini
-include .dockerignore
-include .editorconfig
-include .tx/config
-recursive-include invenio_circulation *.py
-recursive-include invenio_circulation *.json
-recursive-include invenio_circulation *.msg
-recursive-include invenio_circulation *.html
-recursive-include docs *.bat
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs Makefile
-recursive-include examples *.py
-recursive-include tests *.py
+"""Persistent identifier fetchers."""
+
+from __future__ import absolute_import, unicode_literals
+
+from invenio_pidstore.fetchers import FetchedPID
+
+from .providers import CirculationItemProvider, CirculationLoanCycleProvider, \
+        CirculationLocationProvider
+
+
+def _circulation_fetcher(control_number, provider):
+    return FetchedPID(provider=provider, pid_type=provider.pid_type,
+                      pid_value=str(control_number))
+
+
+def circulation_item_fetcher(control_number):
+    """Fetch a circulation item identifier."""
+    return _circulation_fetcher(control_number, CirculationItemProvider)
+
+
+def circulation_loan_cycle_fetcher(control_number):
+    """Fetch a circulation loan cycle identifier."""
+    return _circulation_fetcher(control_number, CirculationLoanCycleProvider)
+
+
+def circulation_location_fetcher(control_number):
+    """Fetch a circulation location identifier."""
+    return _circulation_fetcher(control_number, CirculationLocationProvider)

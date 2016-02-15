@@ -34,7 +34,9 @@ history = open('CHANGES.rst').read()
 tests_require = [
     'check-manifest>=0.25',
     'coverage>=4.0',
-    'isort>=4.2.2',
+    'isort>=4.2.5',
+    'pep257>=0.7.0',
+    'psycopg2>=2.6.1',
     'pydocstyle>=1.0.0',
     'pytest-cache>=1.0',
     'pytest-cov>=1.8.0',
@@ -55,21 +57,45 @@ for reqs in extras_require.values():
 
 setup_requires = [
     'Babel>=1.3',
-    'pytest-runner>=2.6.2',
 ]
 
 install_requires = [
-    'Flask-BabelEx>=0.9.2',
+    'Flask-BabelEx>=0.9.3',
+    'invenio-accounts>=1.0.0a10',
+    'invenio-db>=1.0.0a9',
+    'invenio-indexer>=1.0.0a3',
+    'invenio-jsonschemas>=1.0.0a3',
+    'invenio-mail>=1.0.0a3',
+    'invenio-pidstore>=1.0.0a7',
+    'invenio-records-rest>=1.0.0a15',
+    'invenio-records>=1.0.0a15',
+    'invenio-search>=1.0.0a7',
+    'invenio-userprofiles>=1.0.0a5'
 ]
 
 packages = find_packages()
-
 
 # Get the version string. Cannot be done with import!
 g = {}
 with open(os.path.join('invenio_circulation', 'version.py'), 'rt') as fp:
     exec(fp.read(), g)
     version = g['__version__']
+
+fetcher_str = '{0} = invenio_circulation.fetchers:{1}'
+item_fetcher = fetcher_str.format('circulation_item',
+                                  'circulation_item_fetcher')
+loan_cycle_fetcher = fetcher_str.format('circulation_loan_cycle',
+                                        'circulation_loan_cycle_fetcher')
+location_fetcher = fetcher_str.format('circulation_location',
+                                      'circulation_location_fetcher')
+
+minter_str = '{0} = invenio_circulation.minters:{1}'
+item_minter = minter_str.format('circulation_item',
+                                'circulation_item_minter')
+loan_cycle_minter = minter_str.format('circulation_loan_cycle',
+                                      'circulation_loan_cycle_minter')
+location_minter = minter_str.format('circulation_location',
+                                    'circulation_location_minter')
 
 setup(
     name='invenio-circulation',
@@ -92,19 +118,25 @@ setup(
         'invenio_i18n.translations': [
             'messages = invenio_circulation',
         ],
-        # TODO: Edit these entry points to fit your needs.
-        # 'invenio_access.actions': [],
-        # 'invenio_admin.actions': [],
-        # 'invenio_assets.bundles': [],
-        # 'invenio_base.api_apps': [],
-        # 'invenio_base.api_blueprints': [],
-        'invenio_base.blueprints': [
-            'invenio_circulation = invenio_circulation.views:blueprint',
+        'invenio_db.models': [
+            'invenio_circulation = invenio_circulation.models',
         ],
-        # 'invenio_celery.tasks': [],
-        # 'invenio_db.models': [],
-        # 'invenio_pidstore.minters': [],
-        # 'invenio_records.jsonresolver': [],
+        'invenio_search.mappings': [
+            'circulation = invenio_circulation.mappings',
+        ],
+        'invenio_jsonschemas.schemas': [
+            'circulation = invenio_circulation.schemas',
+        ],
+        'invenio_pidstore.fetchers': [
+            item_fetcher,
+            loan_cycle_fetcher,
+            location_fetcher
+        ],
+        'invenio_pidstore.minters': [
+            item_minter,
+            loan_cycle_minter,
+            location_minter
+        ]
     },
     extras_require=extras_require,
     install_requires=install_requires,

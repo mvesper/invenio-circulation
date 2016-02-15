@@ -1,0 +1,36 @@
+{
+    "type": "object",
+    "title": "Item",
+    "properties": {
+        "uuid": {"type": "string"},
+        "international_standard_book_number": {
+            "type": "object",
+            "properties": {
+                "international_standard_book_number": {
+                    "type": "string"}
+            }},
+        "item_information_general_information": {
+            "type": "object",
+            "properties": {
+                "piece_designation": {
+                    "type": "string"},
+                "public_note": {
+                    "type": "string"},
+                "materials_specified": {
+                    "type": "string"}
+            }},
+        "local_data": {
+            "type": "object",
+            "properties": {
+                "current_status": {
+                    "enum": [
+                        "on_shelf",
+                        "on_loan",
+                        "in_process",
+                        "missing",
+                        "unavailable"]}
+            }},
+        "record": {"type": "object"},
+        "location": {"$ref": "location.json"}
+     }
+}
