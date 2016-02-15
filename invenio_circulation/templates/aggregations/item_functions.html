@@ -1,0 +1,38 @@
+<h3>Functions<h3>
+<div class="col-md-12" id="entity_actions">
+    <ul class="list-unstyled">
+        <li>
+            {% if lose %}
+                <button type="button" class="btn btn-success" data-action="lose">LOSE</button>
+            {% else %}
+                <button type="button" class="btn btn-danger" disabled data-action="lose">LOSE</button>
+            {% endif %}
+        </li>
+        <li>
+            <div class="input-group">
+                <span class="input-group-btn">
+                    {% if process %}
+                        <button type="button" class="btn btn-success" data-action="process">PROCESS</button>
+                    {% else %}
+                        <button type="button" class="btn btn-danger" disabled data-action="process">PROCESS</button>
+                    {% endif %}
+                </span>
+                <input type="text" class="form-control" placeholder="BLA">
+            </div>
+        </li>
+        <li>
+            {% if overdue %}
+                <button type="button" class="btn btn-success" data-action="overdue">OVERDUE</button>
+            {% else %}
+                <button type="button" class="btn btn-danger" disabled data-action="overdue">OVERDUE</button>
+            {% endif %}
+        </li>
+        <li>
+            {% if return_missing %}
+                <button type="button" class="btn btn-success" data-action="return_missing">RETURN MISSING</button>
+            {% else %}
+                <button type="button" class="btn btn-danger" disabled data-action="return_missing">RETURN MISSING</button>
+            {% endif %}
+        </li>
+    </ul>
+</div>

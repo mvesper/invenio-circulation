@@ -1,0 +1,15 @@
+<h3>Location</h3>
+<table class="table table-hover">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Code</th>
+    </tr>
+    {% for location in locations %}
+        <tr>
+            <td><a href="/circulation/entities/location/{{location.id}}">{{location.id}}</a></td>
+            <td>{{location.name}}</td>
+            <td>{{location.code}}</td>
+        </tr>
+    {% endfor %}
+</table>

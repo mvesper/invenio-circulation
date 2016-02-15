@@ -1,0 +1,19 @@
+{'mappings': {
+    'circulation_mail_template': {
+        '_all': {'enabled': True},
+        'properties': {
+            'id': {
+                'type': 'integer',
+                'index': 'not_analyzed'},
+            'template_name': {
+                'type': 'string',},
+            'subject': {
+                'type': 'string',},
+            'header': {
+                'type': 'string',},
+            'content': {
+                'type': 'string',},
+            }
+        }
+    }
+}

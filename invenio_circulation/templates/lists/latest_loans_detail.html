@@ -1,0 +1,58 @@
+{# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#}
+
+{%- extends 'circulation_base.html' -%}
+
+{% from 'macros.html' import date_selection %}
+
+{%- block css %}
+    {{ super() }}
+    {% assets "invenio_circulation_css" %}<link href="{{ ASSET_URL }}" rel="stylesheet">{% endassets %}
+{%- endblock css %}
+
+{%- block javascript -%}
+    {{ super() }}
+    {% assets "invenio_circulation_lists_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+{%- endblock javascript -%}
+
+{%- block circulation_body -%}
+    {{ date_selection(start_date, end_date) }}
+    <table class="table table-condensed">
+        <tr>
+            <th>Borrower</th>
+            <th>CCID</th>
+            <th>Item</th>
+            <th>Barcode</th>
+            <th>Start date</th>
+            <th>End date</th>
+        </tr>
+    {% for clc in clcs %}
+        <tr>
+            <td>{{clc.user.name}}</td>
+            <td>{{clc.user.ccid}}</td>
+            <td>{{clc.item.record.title}}</td>
+            <td>{{clc.item.barcode}}</td>
+            <td>{{clc.start_date}}</td>
+            <td>{{clc.end_date}}</td>
+        </tr>
+    {% endfor %}
+    </table>
+    <button type="button" class="btn btn-block btn-success"  id="to_details" data-start_date="#circulation_date_from" data-link="{{link}}" data-end_date="#circulation_date_to">CHECK PERIOD</button>
+{%- endblock -%}

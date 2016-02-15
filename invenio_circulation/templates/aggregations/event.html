@@ -1,0 +1,15 @@
+<h3>Events</h3>
+<table class="table table-hover">
+    <tr>
+        <th>ID</th>
+        <th>Event</th>
+        <th>Creation Date</th>
+    </tr>
+    {% for event in events %}
+        <tr>
+            <td><a href="/circulation/entities/event/{{event.id}}">{{event.id}}</a></td>
+            <td>{{event.event}}</td>
+            <td>{{event.creation_date}}</td>
+        </tr>
+    {% endfor %}
+</table>

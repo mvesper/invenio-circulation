@@ -1,0 +1,35 @@
+{'mappings': {
+    'circulation_item': {
+        '_all': {'enabled': True},
+        'properties': {
+            'id': {
+                'type': 'integer',
+                'index': 'not_analyzed'},
+            'record_id': {
+                'type': 'integer',
+                'index': 'not_analyzed'},
+            'location_id': {
+                'type': 'integer',
+                'index': 'not_analyzed'},
+            'isbn': {
+                'type': 'string',
+                'index': 'not_analyzed'},
+            'barcode': {
+                'type': 'string',
+                'index': 'not_analyzed'},
+            'current_status': {
+                'type': 'string',
+                'index': 'not_analyzed'},
+            'title': {
+                'type': 'string',},
+            'record': {
+                'properties': {
+                    'title': {
+                        'type': 'string',
+                        'copy_to': ['global_fulltext']}
+                    }
+                },
+            }
+        }
+    }
+}

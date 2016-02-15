@@ -1,0 +1,102 @@
+{{!
+  This file is part of Invenio.
+  Copyright (C) 2015 CERN.
+
+  Invenio is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 2 of the
+  License, or (at your option) any later version.
+
+  Invenio is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with Invenio; if not, write to the Free Software Foundation, Inc.,
+  59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+}}
+{{#entities}}
+{{#is_value}}
+    {{#is_link}}
+        <a href="{{link}}">{{value}}</a>
+    {{/is_link}}
+    {{^is_link}}
+        {{value}}
+    {{/is_link}}
+{{/is_value}}
+
+{{#open_row}}
+    <div class="row">
+{{/open_row}}
+
+{{#close_row}}
+    </div>
+{{/close_row}}
+
+{{#open_col}}
+    <div class="col-md-12">
+{{/open_col}}
+
+{{#close_col}}
+    </div>
+{{/close_col}}
+
+{{#open_col_2}}
+    <div class="col-md-2">
+{{/open_col_2}}
+
+{{#close_col_2}}
+    </div>
+{{/close_col_2}}
+
+{{#open_col_10}}
+    <div class="col-md-10">
+{{/open_col_10}}
+
+{{#close_col_10}}
+    </div>
+{{/close_col_10}}
+
+{{#open_entity}}
+    <div class="panel panel-default" id="entity_{{id}}">
+{{/open_entity}}
+
+{{#close_entity}}
+    </div>
+{{/close_entity}}
+
+{{#open_heading}}
+    {{#has_delete}}
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-md-10">
+                    <a href="/circulation/entities/{{type}}/{{id}}">{{id}}</a>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-default btn-danger btn-block entity_delete" id="delete_{{id}}">{{delete_func_name}}</button>
+                </div>
+            </div>
+    {{/has_delete}}
+    {{^has_delete}}
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-md-12">
+                    <a href="/circulation/entities/{{type}}/{{id}}">{{id}}</a>
+                </div>
+            </div>
+    {{/has_delete}}
+{{/open_heading}}
+
+{{#close_heading}}
+    </div>
+{{/close_heading}}
+
+{{#open_body}}
+    <div class="panel-body">
+{{/open_body}}
+
+{{#close_body}}
+    </div>
+{{/close_body}}
+{{/entities}}

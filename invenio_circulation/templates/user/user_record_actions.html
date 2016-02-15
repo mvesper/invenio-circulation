@@ -1,0 +1,138 @@
+{# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#}
+
+{%- extends 'circulation_base_blank.html' -%}
+{% from 'macros.html' import record as _record %}
+{% from 'macros.html' import date_selection %}
+{% from 'macros.html' import options %}
+{% from 'macros.html' import warnings %}
+
+{%- block css %}
+    {{ super() }}
+    {% assets "invenio_circulation_css" %}<link href="{{ ASSET_URL }}" rel="stylesheet">{% endassets %}
+{%- endblock css %}
+
+{%- block javascript -%}
+    {{ super() }}
+    {% assets "invenio_circulation_user_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+{%- endblock javascript -%}
+
+{%- block circulation_body -%}
+<div id="circulation_search_result">
+    {% if user %}
+    <div class="panel panel-default" id="user_{{id}}">
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-md-10">
+                    <a href="/circulation/entities/user/{{user.id}}">User {{user.id}}</a>
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-2">CCID</div>
+                <div class="col-md-10">{{user.ccid}}</div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">NAME</div>
+                <div class="col-md-10">{{user.name}}</div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">Email</div>
+                <div class="col-md-10">{{user.email}}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <div class="panel panel-default" id="record_{{record.id}}">
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-md-12">
+                    <a href="/circulation/entities/record/{{record.id}}">Record {{record.id}}</a>
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-2">Title</div>
+                <div class="col-md-10">{{record.title}}</div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">Authors</div>
+                <div class="col-md-10">
+                    <ul class="list-unstyled"> 
+                        {% for author in record.authors %}
+                            <li>{{author}}</li> 
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">Items:</div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-hover">
+                        <tr>
+                            <th>Barcode</th>
+                            <th>Status</th>
+                            <th>Volume</th>
+                            <th>Shelf Number</th>
+                            <th>Action</th>
+                        </tr>
+                    {% for item in record._items %}
+                    <tr class="record_item" data-cal_data="{{item.cal_data}}" data-cal_range="{{item.cal_range}}" data-warnings="{{item.warnings}}">
+                            <td>
+                                {{item.item.barcode}}
+                            </td>
+                            <td>
+                                {{item.item.current_status}}
+                            </td>
+                            <td>
+                                {{item.item.volume}}
+                            </td>
+                            <td>
+                                {{item.item.shelf_number}}
+                            </td>
+                            <td>
+                                {% if item.request%}
+                                    <button type="button" class="btn btn-block btn-success user_action" id="request_button_{{item.item.id}}" data-type="item" data-item_id="{{item.item.id}}" data-user_id="{{user.id}}" data-action="request">REQUEST</button>
+                                {% else %}
+                                    <button type="button" class="btn btn-block btn-danger user_action" id="request_button_{{item.item.id}}" disabled="true" data-type="item" data-item_id="{{item.item.id}}" data-user_id="{{user.id}}" data-action="request">REQUEST</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{ date_selection(start_date, end_date, cal_data, cal_range) }}
+
+    {{ options(waitlist_enable=True, waitlist=waitlist, delivery_enable=True, delivery=delivery) }}
+
+    <button type="button" class="btn btn-block btn-success request_new_params" id="user_check_params" data-user_id="{{user.id}}" data-record_id="{{record.id}}">CHECK PARAMETERS</button>
+
+</div>
+{%- endblock -%}

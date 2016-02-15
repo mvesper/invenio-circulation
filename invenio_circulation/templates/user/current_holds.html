@@ -1,0 +1,44 @@
+{# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#}
+
+<h3>Current Loans</h3>
+<div class="row">
+    <div class="col-md-12">
+        <table class="table">
+            <tr>
+                <th>Title</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th class="col-md-3">Actions</th>
+            </tr>
+            {% for lc in holds %}
+            <tr>
+                <td>{{lc.clc.item.record.title}}</td>
+                <td>{{lc.clc.start_date}}</td>
+                <td>{{lc.clc.end_date}}</td>
+                <td>
+                    <button type="button" class="btn btn-default btn-default current_hold_user_action" id="extension_button_{{lc.clc.id}}" data-clc_id="{{lc.clc.id}}" data-item_id="{{lc.clc.item.id}}" data-waitlist=false data-action="loan_extension" data-cal_data="{{lc.cal_data}}" data-cal_range="{{lc.cal_range}}">EXTEND LOAN</button>
+                    <button type="button" class="btn btn-default btn-default current_hold_user_action" data-item_id="{{lc.clc.item.id}}" data-action="lose_items">REPORT LOSS</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>

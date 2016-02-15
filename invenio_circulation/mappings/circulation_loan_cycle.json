@@ -1,0 +1,18 @@
+{'mappings': {
+    'circulation_loan_cycle': {
+        '_all': {'enabled': True},
+        'properties': {
+            'id': {
+                'type': 'string',
+                'index': 'not_analyzed'},
+            'group_uuid': {
+                'type': 'string',
+                'index': 'not_analyzed'},
+            'end_date': {
+                'type': 'date',},
+            'global_fulltext': {
+                'type': 'string',},
+            }
+        }
+    }
+}

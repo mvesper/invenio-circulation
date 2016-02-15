@@ -1,0 +1,148 @@
+{% from 'macros.html' import date_selection %}
+{% from 'macros.html' import options %}
+{% from 'macros.html' import warnings %}
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <input class="form-control" id="circulation_search" type="text" placeholder="Search for items, users and records here by using the Invenio search syntax (CCIDs, barcodes, titles).">
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">User</div>
+    <div class="panel-body" id="circulation_user">
+        {% if users %}
+            <table class="table table-hover">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>CCID</th>
+                <th>Email</th>
+                <th>User Group</th>
+                <th class="col-md-1">Action</th>
+            </tr>
+            {% for entity in users %}
+                <tr class="circulation_user" data-id="{{entity.id}}">
+                    <td><a href="/circulation/entities/user/{{entity.id}}">{{entity.id}}</a></td>
+                    <td>{{entity.name}}</td>
+                    <td>{{entity.ccid}}</td>
+                    <td>{{entity.email}}</td>
+                    <td>{{entity.user_group}}</td>
+                    <td class="col-md-1"><button type="button" class="btn btn-danger btn-block entity_delete" data-id="{{entity.id}}" data-entity="user">Remove</button></td>
+                </tr>
+            {% endfor %}
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+<div id="circulation_items" class="panel panel-default">
+    <div class="panel-heading">Items</div>
+    <div class="panel-body" id="circulation_item">
+        {% if items %}
+            {{ warnings(item_warnings) }}
+            <table class="table table-hover">
+                <tr>
+                    <th>ID</th>
+                    <th>Barcode</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Location</th>
+                    <th>Shelf Number</th>
+                    <th>Record ID</th>
+                    <th class="col-md-1">Action</th>
+                </tr>
+                {% for entity in items %}
+                    <tr class="circulation_item" data-id="{{entity.id}}">
+                        <td><a href="/circulation/entities/item/{{entity.id}}">{{entity.id}}</a></td>
+                        <td>{{entity.barcode}}</td>
+                        <td>{{entity.record.title}}</td>
+                        <td>{{entity.current_status}}</td>
+                        <td>{{entity.location.name}}</td>
+                        <td>{{entity.shelf_number}}</td>
+                        <td>{{entity.record.id}}</td>
+                        <td class="col-md-1"><button type="button" class="btn btn-danger entity_delete" data-id="{{entity.id}}" data-entity="item">Remove</button></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">Records</div>
+    <div class="panel-body" id="circulation_record">
+        {% for record in records %}
+            <div class="panel panel-default" id="record_{{record.id}}">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <a href="/circulation/entities/record/{{record.id}}">{{record.id}}</a>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger btn-block entity_delete" data-id="{{record.id}}" data-entity="record">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-2">Title</div>
+                        <div class="col-md-10">{{record.title}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2">Authors</div>
+                        <div class="col-md-10">
+                            <ul class="list-unstyled"> 
+                                {% for author in record.authors %}
+                                    <li>{{author.name}}</li> 
+                                {% endfor %}
+                            <ul>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2">Items</div>
+                        <div class="col-md-10">
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Barcode</th>
+                                    <th>Status</th>
+                                    <th>Volume</th>
+                                    <th>Shelf Number</th>
+                                    <th>Action</th>
+                                </tr>
+                            {% for item in record.items %}
+                                <tr class="record_item" data-cal_data="{{item.cal_data}}" data-cal_range="{{item.cal_range}}">
+                                    <td>
+                                        <a href="/circulation/entities/item/{{item.id}}" role="button">{{item.id}}</a>
+                                    </td>
+                                    <td>
+                                        {{item.barcode}}
+                                    </td>
+                                    <td>
+                                        {{item.current_status}}
+                                    </td>
+                                    <td>
+                                        {{item.volume}}
+                                    </td>
+                                    <td>
+                                        {{item.shelf_number}}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-success item_select" data-record_id="{{record.id}}" data-item_id="{{item.id}}">SELECT</button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{{ date_selection(start_date, end_date, cal_data, cal_range, date_warnings=date_warnings) }}
+{{ options(waitlist_enable=True, waitlist=waitlist, delivery_enable=True, delivery=delivery) }}
+
+<button type="button" class="btn btn-block btn-success request_new_params" id="circulation_check_params">CHECK PARAMETERS</button>

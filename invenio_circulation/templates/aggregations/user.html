@@ -1,0 +1,19 @@
+<h3>User</h3>
+<table class="table table-hover">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>CCID</th>
+        <th>Email</th>
+        <th>User Group</th>
+    </tr>
+    {% for user in users %}
+        <tr>
+            <td><a href="/circulation/entities/user/{{user.id}}">{{user.id}}</a></td>
+            <td>{{user.name}}</td>
+            <td>{{user.ccid}}</td>
+            <td>{{user.email}}</td>
+            <td>{{user.user_group}}</td>
+        </tr>
+    {% endfor %}
+</table>

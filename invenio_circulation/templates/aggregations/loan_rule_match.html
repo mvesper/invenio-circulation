@@ -1,0 +1,21 @@
+<h3>Loan Rule Match</h3>
+<table class="table table-hover">
+    <tr>
+        <th>ID</th>
+        <th>Loan Rule</th>
+        <th>Item Type</th>
+        <th>Patron Type</th>
+        <th>Location Code</th>
+        <th>Active</th>
+    </tr>
+    {% for loan_rule_match in loan_rule_matches %}
+        <tr>
+            <td><a href="/circulation/entities/loan_rule_match/{{loan_rule_match.id}}">{{loan_rule_match.id}}</a></td>
+            <td>{{loan_rule_match.loan_rule_id}}</td>
+            <td>{{loan_rule_match.item_type}}</td>
+            <td>{{loan_rule_match.patron_type}}</td>
+            <td>{{loan_rule_match.location_code}}</td>
+            <td>{{loan_rule_match.active}}</td>
+        </tr>
+    {% endfor %}
+</table>

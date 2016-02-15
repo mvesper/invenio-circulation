@@ -1,0 +1,25 @@
+<h3>Loan Rule</h3>
+<table class="table table-hover">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Period</th>
+        <th>Holdable</th>
+        <th>Home Pickup</th>
+        <th>Renewable</th>
+        <th>Automatic Recall</th>
+    </tr>
+    {% for loan_rule in loan_rules %}
+        <tr>
+            <td><a href="/circulation/entities/loan_rule/{{loan_rule.id}}">{{loan_rule.id}}</a></td>
+            <td>{{loan_rule.name}}</td>
+            <td>{{loan_rule.type}}</td>
+            <td>{{loan_rule.loan_period}}</td>
+            <td>{{loan_rule.holdable}}</td>
+            <td>{{loan_rule.home_pickup}}</td>
+            <td>{{loan_rule.renewable}}</td>
+            <td>{{loan_rule.automatic_recall}}</td>
+        </tr>
+    {% endfor %}
+</table>

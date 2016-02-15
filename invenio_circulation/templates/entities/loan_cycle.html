@@ -1,0 +1,53 @@
+{# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#}
+
+{%- extends 'entities/entity_hub.html' -%}
+
+{%- block entity_search_result -%}
+<table class="table table-hover">
+    <tr>
+        <th>ID</th>
+        <th>Current Status</th>
+        <th>Item ID</th>
+        <th>User ID</th>
+        <th>Start Date</th>
+        <th>Desired Start Date</th>
+        <th>End Date</th>
+        <th>Desired End Date</th>
+        <th>Issued Date</th>
+        <th>Action</th>
+    </tr>
+    {% for entity in entities %}
+        {% set delete_button = '<button type="button" class="btn btn-danger btn-block entity_delete" id="delete_' + entity.id|string + '">Delete</button>' %}
+        <tr onclick="document.location = '/circulation/entities/loan_cycle/{{entity.id}}'">
+            <td><a href="/circulation/entities/loan_cycle/{{entity.id}}">{{entity.id}}</a></td>
+            <td>{{entity.current_status}}</td>
+            <td>{{entity.item.id}}</td>
+            <td>{{entity.user.id}}</td>
+            <td>{{entity.start_date}}</td>
+            <td>{{entity.desired_start_date}}</td>
+            <td>{{entity.end_date}}</td>
+            <td>{{entity.desired_end_date}}</td>
+            <td>{{entity.issued_date}}</td>
+            <td>{{delete_button | safe}}</td>
+        </tr>
+    {% endfor %}
+</table>
+{%- endblock -%}

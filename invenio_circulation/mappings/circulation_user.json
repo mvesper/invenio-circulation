@@ -1,0 +1,30 @@
+{'mappings': {
+    'circulation_user': {
+        '_all': {'enabled': True},
+        'properties': {
+            'id': {
+                'type': 'integer',
+                'index': 'not_analyzed'},
+            'invenio_user_id': {
+                'type': 'integer',
+                'index': 'not_analyzed'},
+            'ccid': {
+                'type': 'string',
+                'index': 'not_analyzed'},
+            'name': {
+                'type': 'string'},
+            'email': {
+                'type': 'string'},
+            'address': {
+                'type': 'string'},
+            'phone': {
+                'type': 'string',
+                'index': 'not_analyzed'},
+            'mailbox': {
+                'type': 'string',},
+            'user_group': {
+                'type': 'string',},
+            }
+        }
+    }
+ }
