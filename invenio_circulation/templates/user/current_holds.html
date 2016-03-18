@@ -34,8 +34,8 @@
                 <td>{{lc.clc.start_date}}</td>
                 <td>{{lc.clc.end_date}}</td>
                 <td>
-                    <button type="button" class="btn btn-default btn-default current_hold_user_action" id="extension_button_{{lc.clc.id}}" data-clc_id="{{lc.clc.id}}" data-item_id="{{lc.clc.item.id}}" data-waitlist=false data-action="loan_extension" data-cal_data="{{lc.cal_data}}" data-cal_range="{{lc.cal_range}}">EXTEND LOAN</button>
-                    <button type="button" class="btn btn-default btn-default current_hold_user_action" data-item_id="{{lc.clc.item.id}}" data-action="lose_items">REPORT LOSS</button>
+                    <button type="button" class="btn btn-default btn-default entity_action" data-modal_type="time_pick" data-modal_attr="requested_end_date" data-check_on_change="" data-clc_id="{{lc.clc.id}}" data-action="loan_extension" data-cal_data="{{lc.cal_data}}" data-cal_range="{{lc.cal_range}}">EXTEND LOAN</button>
+                    <button type="button" class="btn btn-default btn-default entity_action" data-item_id="{{lc.clc.item.id}}" data-action="lose_items">REPORT LOSS</button>
                 </td>
             </tr>
             {% endfor %}

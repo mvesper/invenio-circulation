@@ -105,3 +105,23 @@ def _get_cal_heatmap_range(items):
 
 def flatten(l):
     return [x for sublist in l for x in sublist]
+
+
+def get_user(current_user):
+    from invenio_circulation.signals import get_circulation_user_info
+
+    try:
+        # There is a CirculationUser corresponding to the current_user
+        query = 'invenio_user_id:{0} OR email:{1}'.format(current_user.id,
+                                                          current_user.email)
+        user = models.CirculationUser.search(query)[0]
+        if user.invenio_user_id is None:
+            user.invenio_user_id = current_user.id
+            user.save()
+    except IndexError:
+        user = send_signal(get_circulation_user_info, None,
+                           current_user.email)[0]
+        user.invenio_user_id = current_user.id
+        user.save()
+
+    return user

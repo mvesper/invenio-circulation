@@ -33,7 +33,7 @@
     </tr>
     {% for entity in entities %}
         {% set delete_button = '<button type="button" class="btn btn-danger btn-block entity_delete" id="delete_' + entity.id|string + '">Delete</button>' %}
-        <tr onclick="document.location = '/circulation/entities/loan_rule_match/{{entity.id}}'">
+        <tr>
             <td><a href="/circulation/entities/loan_rule_match/{{entity.id}}">{{entity.id}}</a></td>
             <td>{{entity.loan_rule_id}}</td>
             <td>{{entity.item_type}}</td>

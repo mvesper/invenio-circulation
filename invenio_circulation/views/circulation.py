@@ -56,8 +56,10 @@ def circulation_search(search_string=None):
                                                  circulation_other_actions)
 
         content = send_signal(circulation_state, None, data)[0]()
-        main_actions = flatten(send_signal(circulation_main_actions, None, data))
-        other_actions = flatten(send_signal(circulation_other_actions, None, data))
+        main_actions = flatten(send_signal(circulation_main_actions,
+                                           None, data))
+        other_actions = flatten(send_signal(circulation_other_actions,
+                                            None, data))
         return render_template('circulation/circulation.html',
                                active_nav='circulation', content=content,
                                main_actions=main_actions,
@@ -78,7 +80,8 @@ def api_circulation_run_action():
 
     try:
         message = send_signal(run_action, data['action'], data)[0]
-    except ValidationExceptions:
+    except ValidationExceptions as e:
+        raise
         flash(('The desired action failed, click *CHECK PARAMETERS* '
                'for more information.'), 'danger')
         return ('', 500)

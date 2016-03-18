@@ -26,6 +26,7 @@ item_returned = cs.signal('item_returned')
 
 user_current_holds = cs.signal('user_current_holds')
 user_current_holds_action = cs.signal('user_current_holds_action')
+get_circulation_user_info = cs.signal('get_circulation_user_info')
 
 # CIRCULATION
 

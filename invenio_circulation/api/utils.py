@@ -205,6 +205,13 @@ def get_loan_rule(user, item):
     return CirculationLoanRule.get(rule[3])
 
 
+def is_renewable(user, items):
+    try:
+        return all(get_loan_rule(user, item).renewable for item in items)
+    except Exception:
+        return False
+
+
 def get_loan_period(user, items):
     try:
         return max(get_loan_rule(user, item).loan_period for item in items)

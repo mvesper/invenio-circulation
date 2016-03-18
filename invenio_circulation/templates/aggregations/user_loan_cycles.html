@@ -1,0 +1,62 @@
+<h3>Current Loans</h3>
+<table class="table table-hover">
+    <tr>
+        <th>ID</th>
+        <th>Item</th>
+        <th>Status</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+    </tr>
+
+    {% for lc in loan_loan_cycles %}
+        <tr>
+            <td><a href="/circulation/entities/loan_cycle/{{lc.id}}">{{lc.id}}</a></td>
+            <td><a href="/circulation/entities/item/{{lc.item.id}}">{{lc.item.record.title}}</a></td>
+            <td>{{lc.current_status}}</td>
+            <td>{{lc.start_date}}</td>
+            <td>{{lc.end_date}}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h3>Current Requests</h3>
+<table class="table table-hover">
+    <tr>
+        <th>ID</th>
+        <th>Item</th>
+        <th>Status</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+    </tr>
+
+    {% for lc in request_loan_cycles %}
+        <tr>
+            <td><a href="/circulation/entities/loan_cycle/{{lc.id}}">{{lc.id}}</a></td>
+            <td><a href="/circulation/entities/item/{{lc.item.id}}">{{lc.item.record.title}}</a></td>
+            <td>{{lc.current_status}}</td>
+            <td>{{lc.start_date}}</td>
+            <td>{{lc.end_date}}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h3>Finished Loans</h3>
+<table class="table table-hover">
+    <tr>
+        <th>ID</th>
+        <th>Item</th>
+        <th>Status</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+    </tr>
+
+    {% for lc in finished_loan_cycles %}
+        <tr>
+            <td><a href="/circulation/entities/loan_cycle/{{lc.id}}">{{lc.id}}</a></td>
+            <td><a href="/circulation/entities/item/{{lc.item.id}}">{{lc.item.record.title}}</a></td>
+            <td>{{lc.current_status}}</td>
+            <td>{{lc.start_date}}</td>
+            <td>{{lc.end_date}}</td>
+        </tr>
+    {% endfor %}
+</table>

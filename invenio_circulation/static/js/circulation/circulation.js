@@ -20,10 +20,10 @@
 define(
     [
         'jquery',
-        'node_modules/cal-heatmap/cal-heatmap',
+        'js/circulation/cal_setup',
         'node_modules/bootstrap-datepicker/js/bootstrap-datepicker',
     ],
-function($, ch, _bdp) {
+function($, chs, _bdp) {
     function get_circulation_state() {
         var url_parts = document.URL.split('/');
 
@@ -106,6 +106,7 @@ function($, ch, _bdp) {
                     waitlist: waitlist, delivery: delivery};
 
         function success(data) {
+            $(document).scrollTop(0);
             window.location.href = '/circulation/';
         }
 
@@ -129,35 +130,8 @@ function($, ch, _bdp) {
         if ($('#cal-heatmap').length == 0) {
             return;
         }
-        cal = new CalHeatMap();
-        var data = JSON.parse($('#cal-heatmap').attr('data-cal_data'));
-        var range = parseInt($('#cal-heatmap').attr('data-cal_range'));
-        if (range == 0){
-            return
-        }
-        var init = {itemSelector: "#cal-heatmap",
-                    domain: "month",
-                    subDomain: "x_day",
-                    range: range,
-                    data: data,
-                    cellSize: 30,
-                    subDomainTextFormat: "%d",
-                    legend: [1],
-                    legendColors: ["green", "#EE0000"],
-                    displayLegend: false,}
-        cal.init(init);
-    });
-
-    $(document).ready(function(){
-        /*
-        if($('#circulation_alert').length){
-            function hide_circulation_alert(){
-                $('#circulation_alert').fadeOut(1000);
-            }
-            setTimeout(hide_circulation_alert, 5000);
-        }
-        */
-        $('.circulation_alert').toggle();
+        cal = chs.setup('#cal-heatmap');
+        cal.update($('#cal-heatmap').data().cal_data);
     });
 
     $('#circulation_toggle_hints').on('click', function() {
@@ -195,7 +169,6 @@ function($, ch, _bdp) {
         }
 
         //Add item
-        //
         if (state.items.length == 1 && state.items.indexOf('') == 0) {
             state.items = [];
         }
@@ -251,5 +224,8 @@ function($, ch, _bdp) {
          
         $('#circulation_action_container').stop(false, false).animate({top: move}, 100);
     });
-}
-);
+
+    $(document).ready(function() {
+        $('.circulation_alert').toggle();
+    });
+});

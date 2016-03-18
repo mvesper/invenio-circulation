@@ -21,8 +21,8 @@ import json
 
 from flask import Blueprint, render_template, flash
 
-from invenio_circulation.views.utils import (datetime_serial, send_signal,
-                                             flatten, extract_params)
+from invenio_circulation.views.utils import (
+        datetime_serial, send_signal, flatten, extract_params)
 from invenio_circulation.acl import circulation_admin_permission as cap
 
 blueprint = Blueprint('entity', __name__, url_prefix='/circulation',

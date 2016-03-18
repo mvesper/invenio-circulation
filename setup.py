@@ -127,14 +127,18 @@ setup(
             'messages = invenio_circulation',
         ],
         'invenio_db.models': [
-            'invenio_circulation = invenio_circulation.models',  
+            'invenio_circulation = invenio_circulation.models',
         ],
         'invenio_assets.bundles': [
             'invenio_circulation_css = invenio_circulation.bundles:css',
-            'invenio_circulation_circulation_js = invenio_circulation.bundles:js_circulation',
-            'invenio_circulation_entity_js = invenio_circulation.bundles:js_entity',
-            'invenio_circulation_user_js = invenio_circulation.bundles:js_user',
-            'invenio_circulation_lists_js= invenio_circulation.bundles:js_lists',
+            ('invenio_circulation_circulation_js = '
+             'invenio_circulation.bundles:js_circulation'),
+            ('invenio_circulation_entity_js = '
+             'invenio_circulation.bundles:js_entity'),
+            ('invenio_circulation_user_js = '
+             'invenio_circulation.bundles:js_user'),
+            ('invenio_circulation_lists_js = '
+             'invenio_circulation.bundles:js_lists'),
         ],
         # TODO: Edit these entry points to fit your needs.
         # 'invenio_access.actions': [],

@@ -20,21 +20,29 @@
 define(
     [
         'jquery',
-        'node_modules/bootstrap-datepicker/js/bootstrap-datepicker',
+        'node_modules/cal-heatmap/cal-heatmap',
     ],
-function($, _bdp) {
-    $('#to_details').on('click', function(event){
-        var data = $(event.target).data();
-        var link = data.link;
-        delete data.link;
-
-        for (var key in data) {
-            data[key] = $(data[key]).val();
+function($, ch) {
+    function setup(id) {
+        var cal = new CalHeatMap();
+        var data = JSON.parse($(id).attr('data-cal_data'));
+        var range = parseInt($(id).attr('data-cal_range'));
+        if (range == 0){
+            return
         }
+        var init = {itemSelector: id,
+                    domain: "month",
+                    subDomain: "x_day",
+                    range: range,
+                    cellSize: 30,
+                    subDomainTextFormat: "%d",
+                    legend: [1],
+                    legendColors: ["green", "#EE0000"],
+                    displayLegend: false,}
+        cal.init(init);
 
-        window.location.href = '/circulation/lists/' + link + '/detail/' + encodeURIComponent(JSON.stringify(data));
-    });
+        return cal;
+    }
 
-    $('#circulation_date_from').datepicker({ format: 'yyyy-mm-dd'});
-    $('#circulation_date_to').datepicker({ format: 'yyyy-mm-dd'});
+    return {setup: setup}
 });

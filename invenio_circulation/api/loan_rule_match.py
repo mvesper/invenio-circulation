@@ -1,18 +1,17 @@
-from invenio_circulation.models import (CirculationLoanRuleMatch,
-                                                CirculationEvent)
+import invenio_circulation.models as models
+
 from invenio_circulation.api.event import create as create_event
 from invenio_circulation.api.utils import update as _update
 
 
 def create(loan_rule_id, item_type, patron_type, location_code, active):
-    clr = CirculationLoanRuleMatch.new(loan_rule_id=loan_rule_id,
-                                       item_type=item_type,
-                                       patron_type=patron_type,
-                                       location_code=location_code,
-                                       active=active)
+    clr = models.CirculationLoanRuleMatch.new(
+            loan_rule_id=loan_rule_id, item_type=item_type,
+            patron_type=patron_type, location_code=location_code,
+            active=active)
 
     create_event(loan_rule_match_id=clr.id,
-                 event=CirculationEvent.EVENT_LRM_CREATE)
+                 event=models.CirculationLoanRuleMatch.EVENT_CREATE)
 
     return clr
 
@@ -25,13 +24,13 @@ def update(clr, **kwargs):
                                                 changed[key])
                        for key in changed]
         create_event(loan_rule_match_id=clr.id,
-                     event=CirculationEvent.EVENT_LRM_CHANGE,
+                     event=models.CirculationLoanRuleMatch.EVENT_CHANGE,
                      description=', '.join(changes_str))
 
 
 def delete(clr):
     create_event(loan_rule_match_id=clr.id,
-                 event=CirculationEvent.EVENT_LRM_DELETE)
+                 event=models.CirculationLoanRuleMatch.EVENT_DELETE)
     clr.delete()
 
 

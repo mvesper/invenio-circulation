@@ -18,6 +18,6 @@
  */
 
 require([
-    //'jquery',
     'js/circulation/lists',
+    'js/circulation/entity_actions'
 ], function() {});

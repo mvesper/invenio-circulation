@@ -38,7 +38,7 @@
     </tr>
     {% for entity in entities %}
         {% set delete_button = '<button type="button" class="btn btn-danger btn-block entity_delete" id="delete_' + entity.id|string + '">Delete</button>' %}
-        <tr onclick="document.location = '/circulation/entities/event/{{entity.id}}'">
+        <tr>
             <td><a href="/circulation/entities/event/{{entity.id}}">{{entity.id}}</a></td>
             <td>{{entity.event}}</td>
             <td>{{entity.user_id}}</td>

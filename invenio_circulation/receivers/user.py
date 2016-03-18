@@ -1,11 +1,12 @@
-from invenio_circulation.signals import user_current_holds
+from invenio_circulation.signals import (user_current_holds,
+                                         get_circulation_user_info)
 
 
 def _user_current_holds(sender, data):
     import json
     import invenio_circulation.models as models
 
-    from flask import render_template, request, flash
+    from flask import render_template
     from invenio_circulation.views.utils import (
             _get_cal_heatmap_dates, _get_cal_heatmap_range)
 
@@ -34,4 +35,27 @@ def _user_current_holds(sender, data):
                        render_template('user/user_time_pick_modal.html')]}
 
 
+def _get_circulation_user_info(sender, data):
+    import invenio_circulation.api as api
+    from invenio_circulation.models import CirculationUser
+    from invenio_circulation.cern_ldap import get_user_info
+
+    user_info = get_user_info(nickname=data, email=data, ccid=data)
+
+    invenio_user_id = None
+    ccid = user_info['employeeID'][0]
+    name = user_info['displayName'][0]
+    address = ''
+    mailbox = user_info['physicalDeliveryOfficeName'][0]
+    email = user_info['mail'][0]
+    phone = user_info['telephoneNumber'][0]
+    notes = ''
+    group = CirculationUser.GROUP_DEFAULT
+
+    user = api.user.create(invenio_user_id, ccid, name, address, mailbox,
+                           email, phone, notes, group)
+
+    return {'name': 'user', 'result': user}
+
 user_current_holds.connect(_user_current_holds)
+get_circulation_user_info.connect(_get_circulation_user_info)

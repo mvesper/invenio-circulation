@@ -23,7 +23,6 @@ from __future__ import unicode_literals
 
 from invenio_theme.bundles import js as _js
 
-from flask_assets import Bundle
 from invenio_assets import NpmBundle, RequireJSFilter
 
 
@@ -31,38 +30,38 @@ js_circulation = NpmBundle(
     "js/circulation/circulation_init.js",
     output="gen/circulation.%(version)s.js",
     filters=RequireJSFilter(exclude=[_js.contents[1]]),
-    npm = {'cal-heatmap': 'latest',
-           'd3': 'latest',
-           'bootstrap-datepicker': 'latest'},
+    npm={'cal-heatmap': 'latest',
+         'd3': 'latest',
+         'bootstrap-datepicker': 'latest'},
 )
 
 js_entity = NpmBundle(
     "js/circulation/entity_init.js",
     output="gen/entity%(version)s.js",
     filters=RequireJSFilter(exclude=[_js.contents[1]]),
-    npm = {'cal-heatmap': 'latest',
-           'd3': 'latest',
-           'bootstrap-datepicker': 'latest',
-           'typeahead': 'latest',
-           'jquery.tabbable': 'latest'},
+    npm={'cal-heatmap': 'latest',
+         'd3': 'latest',
+         'bootstrap-datepicker': 'latest',
+         'typeahead': 'latest',
+         'jquery.tabbable': 'latest'},
 )
 
 js_user = NpmBundle(
     "js/circulation/user_init.js",
     output="gen/user%(version)s.js",
     filters=RequireJSFilter(exclude=[_js.contents[1]]),
-    npm = {'cal-heatmap': 'latest',
-           'd3': 'latest',
-           'bootstrap-datepicker': 'latest'},
+    npm={'cal-heatmap': 'latest',
+         'd3': 'latest',
+         'bootstrap-datepicker': 'latest'},
 )
 
 js_lists = NpmBundle(
     "js/circulation/lists_init.js",
     output="gen/lists%(version)s.js",
     filters=RequireJSFilter(exclude=[_js.contents[1]]),
-    npm = {'cal-heatmap': 'latest',
-           'd3': 'latest',
-           'bootstrap-datepicker': 'latest'},
+    npm={'cal-heatmap': 'latest',
+         'd3': 'latest',
+         'bootstrap-datepicker': 'latest'},
 )
 
 css = NpmBundle(

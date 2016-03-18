@@ -27,15 +27,15 @@
               </div>
               <div class="modal-body">
                     <div class="col-md-12">
-                        <input class="form-control" id="circulation_extension_date" type="text" value="{{end_date}}" placeholder="Select the new end date">
+                        <input class="form-control circulation_date" id="modal_value" type="text" value="{{end_date}}" placeholder="Select the new end date">
                     </div>
                     <div class="col-md-12">
-                        <div id="cal-heatmap" data-cal_data="{}" data-cal_range="3"></div>
+                        <div id="modal-cal-heatmap" data-cal_data="{}" data-cal_range="3"></div>
                     </div>
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                  <button type="button" id="circulation_extension_button" class="btn btn-default" disabled="true">Extend Loan</button>
+                  <button type="button" class="btn btn-default modal_submit" disabled="true">Extend Loan</button>
               </div>
         </div>
     </div>

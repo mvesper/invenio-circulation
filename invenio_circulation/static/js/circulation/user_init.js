@@ -18,8 +18,6 @@
  */
 
 require([
-    //'jquery',
-    //'js/other/jsoneditor.min',
     'js/circulation/user',
-    //'js/other/cal-heatmap',
+    'js/circulation/entity_actions'
 ], function() {});

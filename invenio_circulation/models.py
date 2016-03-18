@@ -18,12 +18,10 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
-bibcirculation database models.
+invenio-circulation database models.
 """
 
-from sqlalchemy import ForeignKey, func
 from invenio_db import db
-from sqlalchemy_utils import Timestamp
 
 import datetime
 import jsonpickle
@@ -31,11 +29,6 @@ import json
 import importlib
 import elasticsearch
 
-# from invenio_records.api import RecordMetadata
-# from invenio_records.models import Record
-# from invenio_records.api import get_record
-# from invenio.ext.sqlalchemy import db
-from sqlalchemy.ext import mutable
 from sqlalchemy.orm import subqueryload_all
 
 
@@ -95,6 +88,10 @@ class CirculationObject(object):
         obj = cls(**kwargs)
         obj.save()
 
+        # SQLalchemy hack: after every flush(), the __dict__ property
+        # disappears, touching the item gets it back
+        _id = obj.id    # nopep8
+
         return obj
 
     @classmethod
@@ -151,7 +148,31 @@ class CirculationObject(object):
     @classmethod
     def search(cls, query):
         from invenio_search.api import Query
-        res = cls._es.search(index=cls.__tablename__, body=Query(query).body)
+
+        # TODO: That seems slightly wrong xD
+        def replace_field(query):
+            if isinstance(query, dict):
+                for key, value in query.items():
+                    if key == 'fields':
+                        if value == ['_all']:
+                            try:
+                                props = cls._all_field
+                            except AttributeError:
+                                props = ['_all']
+                            query[key] = props
+                    else:
+                        replace_field(value)
+            elif isinstance(query, list):
+                for value in query:
+                    replace_field(value)
+
+        body = Query(query).body
+        # TODO
+        print body
+        replace_field(body)
+        print body
+        res = cls._es.search(index=cls.__tablename__, body=body)
+        print res
         return [cls.get(x['_id']) for x in res['hits']['hits']]
 
     def save(self):
@@ -250,6 +271,10 @@ class CirculationObject(object):
                 except AttributeError:
                     return value
 
+        # SQLalchemy hack: after every flush(), the __dict__ property
+        # disappears, touching the item gets it back
+        _id = self.id   # nopep8
+
         res = {}
         for key, value in self.__dict__.items():
             if key == '_sa_instance_state':
@@ -297,7 +322,8 @@ class CirculationRecord(CirculationObject):
             # 'id': lambda x: x['control_number'],
             'title': lambda x: x['title_statement']['title'],
             'abstract': lambda x: x['summary'][0]['expansion_of_summary_note'],
-            'authors': _get_authors}
+            'authors': _get_authors,
+            'edition': lambda x: x['edition_statement']}
 
     @classmethod
     def new(cls, **kwargs):
@@ -342,7 +368,8 @@ class CirculationRecord(CirculationObject):
                                            body=Query(query).body,
                                            size=1000)
 
-        return [cls.get(x['_id']) for x in res['hits']['hits']]
+        return [cls.get(x['_id']) for x in res['hits']['hits']
+                if x['_score'] > 0.3]
 
     def save(self):
         raise Exception('CirculationRecord is a Wrapper class for Record.')
@@ -375,6 +402,14 @@ class CirculationItem(CirculationObject, db.Model):
     STATUS_IN_PROCESS = 'in_process'
     STATUS_MISSING = 'missing'
 
+    EVENT_CREATE = 'item_created'
+    EVENT_CHANGE = 'item_changed'
+    EVENT_DELETE = 'item_deleted'
+    EVENT_MISSING = 'item_missing'
+    EVENT_RETURNED_MISSING = 'item_returned_missing'
+    EVENT_IN_PROCESS = 'item_in_process'
+    EVENT_PROCESS_RETURNED = 'item_process_returned'
+
     _json_schema = {'type': 'object',
                     'title': 'Item',
                     'properties': {
@@ -391,6 +426,44 @@ class CirculationItem(CirculationObject, db.Model):
                         'volume': {'type': 'string'},
                         }
                     }
+
+    _all_field = ['record_id', 'isbn', 'barcode', 'title']
+
+    _mappings = {'mappings': {
+        'circulation_item': {
+            '_all': {'enabled': True},
+            'properties': {
+                'id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'record_id': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'location_id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'isbn': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'barcode': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'current_status': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'title': {
+                    'type': 'string'},
+                'record': {
+                    'properties': {
+                        'title': {
+                            'type': 'string',
+                            'copy_to': ['title']}
+                        }
+                    },
+                }
+            }
+        }
+        }
 
     @db.reconstructor
     def init_on_load(self):
@@ -422,6 +495,20 @@ class CirculationLoanCycle(CirculationObject, db.Model):
     STATUS_CANCELED = 'canceled'
     STATUS_OVERDUE = 'overdue'
 
+    EVENT_CREATE = 'clc_created'
+    EVENT_CHANGE = 'clc_changed'
+    EVENT_DELETE = 'clc_deleted'
+    EVENT_CREATED_LOAN = 'clc_created_loan'
+    EVENT_CREATED_REQUEST = 'clc_created_request'
+    EVENT_TRANSFORMED_REQUEST = 'clc_transformed_request'
+    EVENT_FINISHED = 'clc_finish'
+    EVENT_CANCELED = 'clc_canceled'
+    EVENT_UPDATED = 'clc_updated'
+    EVENT_OVERDUE = 'clc_overdue'
+    EVENT_OVERDUE_LETTER = 'clc_overdue_letter'
+    EVENT_REQUEST_LOAN_EXTENSION = 'clc_request_loan_extension'
+    EVENT_LOAN_EXTENSION = 'clc_loan_extension'
+
     DELIVERY_DEFAULT = 'Pick up'
 
     _json_schema = {'type': 'object',
@@ -440,6 +527,23 @@ class CirculationLoanCycle(CirculationObject, db.Model):
                         'requested_extension_end_date': {'type': 'string'},
                         }
                     }
+
+    _mappings = {'mappings': {
+        'circulation_loan_cycle': {
+            '_all': {'enabled': True},
+            'properties': {
+                'id': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'group_uuid': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'end_date': {
+                    'type': 'date'},
+                }
+            }
+        }
+        }
 
 
 class CirculationUser(CirculationObject, db.Model):
@@ -461,6 +565,11 @@ class CirculationUser(CirculationObject, db.Model):
 
     GROUP_DEFAULT = 'default'
 
+    EVENT_CREATE = 'user_created'
+    EVENT_CHANGE = 'user_changed'
+    EVENT_DELETE = 'user_deleted'
+    EVENT_MESSAGED = 'user_messaged'
+
     _json_schema = {'type': 'object',
                     'title': 'User',
                     'properties': {
@@ -477,6 +586,44 @@ class CirculationUser(CirculationObject, db.Model):
                         }
                     }
 
+    _all_field = ['ccid', 'name', 'email', 'address', 'phone']
+
+    _mappings = {'mappings': {
+        'circulation_user': {
+            '_all': {'enabled': True,
+                     'index': 'not_analyzed'},
+            'properties': {
+                'id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'invenio_user_id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'ccid': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'name': {
+                    'type': 'string'},
+                'email': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'address': {
+                    'type': 'string'},
+                'phone': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'mailbox': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'user_group': {
+                    'type': 'string'},
+                'notes': {
+                    'type': 'string'},
+                }
+            }
+        }
+        }
+
 
 class CirculationLocation(CirculationObject, db.Model):
     __tablename__ = 'circulation_location'
@@ -487,6 +634,10 @@ class CirculationLocation(CirculationObject, db.Model):
     creation_date = db.Column(db.DateTime)
     modification_date = db.Column(db.DateTime)
     _data = db.Column(db.LargeBinary)
+
+    EVENT_CREATE = 'location_created'
+    EVENT_CHANGE = 'location_changed'
+    EVENT_DELETE = 'location_deleted'
 
     _json_schema = {'type': 'object',
                     'title': 'Location',
@@ -500,6 +651,25 @@ class CirculationLocation(CirculationObject, db.Model):
                         }
                     }
 
+    _mappings = {'mappings': {
+        'circulation_location': {
+            '_all': {'enabled': True},
+            'properties': {
+                'id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'code': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'name': {
+                    'type': 'string'},
+                'notes': {
+                    'type': 'string'},
+                }
+            }
+        }
+        }
+
 
 class CirculationMailTemplate(CirculationObject, db.Model):
     __tablename__ = 'circulation_mail_template'
@@ -511,6 +681,10 @@ class CirculationMailTemplate(CirculationObject, db.Model):
     creation_date = db.Column(db.DateTime)
     modification_date = db.Column(db.DateTime)
     _data = db.Column(db.LargeBinary)
+
+    EVENT_CREATE = 'mail_template_created'
+    EVENT_CHANGE = 'mail_template_changed'
+    EVENT_DELETE = 'mail_template_deleted'
 
     _json_schema = {'type': 'object',
                     'title': 'Mail Template',
@@ -525,6 +699,26 @@ class CirculationMailTemplate(CirculationObject, db.Model):
                         }
                     }
 
+    _mappings = {'mappings': {
+        'circulation_mail_template': {
+            '_all': {'enabled': True},
+            'properties': {
+                'id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'template_name': {
+                    'type': 'string'},
+                'subject': {
+                    'type': 'string'},
+                'header': {
+                    'type': 'string'},
+                'content': {
+                    'type': 'string'},
+                }
+            }
+        }
+        }
+
 
 class CirculationLoanRule(CirculationObject, db.Model):
     __tablename__ = 'circulation_loan_rule'
@@ -533,12 +727,16 @@ class CirculationLoanRule(CirculationObject, db.Model):
     type = db.Column(db.String(255))
     loan_period = db.Column(db.Integer)
     holdable = db.Column(db.Boolean)
-    home_pickup= db.Column(db.Boolean)
+    home_pickup = db.Column(db.Boolean)
     renewable = db.Column(db.Boolean)
     automatic_recall = db.Column(db.Boolean)
     creation_date = db.Column(db.DateTime)
     modification_date = db.Column(db.DateTime)
     _data = db.Column(db.LargeBinary)
+
+    EVENT_CREATE = 'loan_rule_created'
+    EVENT_CHANGE = 'loan_rule_changed'
+    EVENT_DELETE = 'loan_rule_deleted'
 
     _json_schema = {'type': 'object',
                     'title': 'Loan Rule',
@@ -552,6 +750,39 @@ class CirculationLoanRule(CirculationObject, db.Model):
                         'automatic_recall': {'type': 'boolean'},
                         }
                     }
+
+    _mappings = {'mappings': {
+        'circulation_loan_rule': {
+            '_all': {'enabled': True},
+            'properties': {
+                'id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'name': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'type': {
+                    'type': 'string',
+                    'index': 'not_analyzed'},
+                'loan_period': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'holdable': {
+                    'type': 'boolean',
+                    'index': 'not_analyzed'},
+                'home_pickup': {
+                    'type': 'boolean',
+                    'index': 'not_analyzed'},
+                'renewable': {
+                    'type': 'boolean',
+                    'index': 'not_analyzed'},
+                'automatic_recall': {
+                    'type': 'boolean',
+                    'index': 'not_analyzed'},
+                },
+            }
+        }
+        }
 
 
 class CirculationLoanRuleMatch(CirculationObject, db.Model):
@@ -569,6 +800,10 @@ class CirculationLoanRuleMatch(CirculationObject, db.Model):
     modification_date = db.Column(db.DateTime)
     _data = db.Column(db.LargeBinary)
 
+    EVENT_CREATE = 'loan_rule_match_created'
+    EVENT_CHANGE = 'loan_rule_match_changed'
+    EVENT_DELETE = 'loan_rule_match_deleted'
+
     _json_schema = {'type': 'object',
                     'title': 'Loan Rule',
                     'properties': {
@@ -580,6 +815,31 @@ class CirculationLoanRuleMatch(CirculationObject, db.Model):
                         'active': {'type': 'boolean'},
                         }
                     }
+
+    _mappings = {
+            'mappings': {
+                'circulation_loan_rule_match': {
+                    '_all': {'enabled': True},
+                    'properties': {
+                        'id': {
+                            'type': 'integer',
+                            'index': 'not_analyzed'},
+                        'loan_rule_id': {
+                            'type': 'integer',
+                            'index': 'not_analyzed'},
+                        'item_type': {
+                            'type': 'string',
+                            'index': 'not_analyzed'},
+                        'patron_type': {
+                            'type': 'string',
+                            'index': 'not_analyzed'},
+                        'location_code': {
+                            'type': 'string',
+                            'index': 'not_analyzed'},
+                        },
+                    }
+                }
+            }
 
 
 class CirculationEvent(CirculationObject, db.Model):
@@ -607,48 +867,15 @@ class CirculationEvent(CirculationObject, db.Model):
                              db.ForeignKey('circulation_loan_rule.id',
                                            ondelete="SET NULL"))
     loan_rule = db.relationship('CirculationLoanRule')
-    loan_rule_match_id = db.Column(db.BigInteger,
-            db.ForeignKey('circulation_loan_rule_match.id',
-            ondelete="SET NULL"))
+    loan_rule_match_id = db.Column(
+            db.BigInteger, db.ForeignKey('circulation_loan_rule_match.id',
+                                         ondelete="SET NULL"))
     loan_rule_match = db.relationship('CirculationLoanRuleMatch')
     event = db.Column(db.String(255))
     description = db.Column(db.String(255))
     creation_date = db.Column(db.DateTime)
     modification_date = db.Column(db.DateTime)
     _data = db.Column(db.LargeBinary)
-
-    EVENT_ITEM_CREATE = 'item_created'
-    EVENT_ITEM_CHANGE = 'item_changed'
-    EVENT_ITEM_DELETE = 'item_deleted'
-    EVENT_ITEM_MISSING = 'item_missing'
-    EVENT_ITEM_RETURNED_MISSING = 'item_returned_missing'
-    EVENT_ITEM_IN_PROCESS = 'item_in_process'
-    EVENT_USER_CREATE = 'user_created'
-    EVENT_USER_CHANGE = 'user_changed'
-    EVENT_USER_DELETE = 'user_deleted'
-    EVENT_CLC_CREATE = 'clc_created'
-    EVENT_CLC_DELETE = 'clc_deleted'
-    EVENT_CLC_CREATED_LOAN = 'clc_created_loan'
-    EVENT_CLC_CREATED_REQUEST = 'clc_created_request'
-    EVENT_CLC_FINISHED = 'clc_finish'
-    EVENT_CLC_CANCELED = 'clc_canceled'
-    EVENT_CLC_UPDATED = 'clc_updated'
-    EVENT_CLC_OVERDUE = 'clc_overdue'
-    EVENT_CLC_OVERDUE_LETTER = 'clc_overdue_letter'
-    EVENT_CLC_REQUEST_LOAN_EXTENSION = 'clc_request_loan_extension'
-    EVENT_CLC_LOAN_EXTENSION = 'clc_loan_extension'
-    EVENT_LOCATION_CREATE = 'location_created'
-    EVENT_LOCATION_CHANGE = 'location_changed'
-    EVENT_LOCATION_DELETE = 'location_deleted'
-    EVENT_MT_CREATE = 'mail_template_created'
-    EVENT_MT_CHANGE = 'mail_template_changed'
-    EVENT_MT_DELETE = 'mail_template_deleted'
-    EVENT_LR_CREATE = 'loan_rule_created'
-    EVENT_LR_CHANGE = 'loan_rule_changed'
-    EVENT_LR_DELETE = 'loan_rule_deleted'
-    EVENT_LRM_CREATE = 'loan_rule_match_created'
-    EVENT_LRM_CHANGE = 'loan_rule_match_changed'
-    EVENT_LRM_DELETE = 'loan_rule_match_deleted'
 
     _json_schema = {'type': 'object',
                     'title': 'Event',
@@ -666,6 +893,40 @@ class CirculationEvent(CirculationObject, db.Model):
                         'creation_date': {'type': 'string'},
                         }
                     }
+
+    _mappings = {'mappings': {
+        'circulation_event': {
+            '_all': {'enabled': True},
+            'properties': {
+                'id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'user_id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'item_id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'loan_cycle_id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'location_id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'loan_rule_id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'mail_template_id': {
+                    'type': 'integer',
+                    'index': 'not_analyzed'},
+                'event': {
+                    'type': 'string'},
+                'global_fulltext': {
+                    'type': 'string'},
+                }
+            }
+        }
+        }
 
 
 jsonpickle.handlers.registry.register(CirculationRecord,
@@ -691,4 +952,5 @@ entities = [('Record', 'record', CirculationRecord),
             ('Location', 'location', CirculationLocation),
             ('Event', 'event', CirculationEvent),
             ('Mail Template', 'mail_template', CirculationMailTemplate),
-            ('Loan Rule', 'loan_rule', CirculationLoanRule)]
+            ('Loan Rule', 'loan_rule', CirculationLoanRule),
+            ('Loan Rule Match', 'loan_rule_match', CirculationLoanRuleMatch)]

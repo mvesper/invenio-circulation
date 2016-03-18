@@ -1,5 +1,4 @@
-from invenio_circulation.signals import (lists_overview,
-                                                 lists_class)
+from invenio_circulation.signals import lists_overview, lists_class
 
 
 def _lists_overview(sender, data):

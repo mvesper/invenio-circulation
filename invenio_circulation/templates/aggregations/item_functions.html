@@ -1,38 +1,37 @@
+{% from 'macros.html' import description_modal %}
+
 <h3>Functions<h3>
 <div class="col-md-12" id="entity_actions">
     <ul class="list-unstyled">
         <li>
             {% if lose %}
-                <button type="button" class="btn btn-success" data-action="lose">LOSE</button>
+                <button type="button" class="btn btn-success entity_action" data-item_id="{{item.id}}" data-action="lose_items">LOSE</button>
             {% else %}
-                <button type="button" class="btn btn-danger" disabled data-action="lose">LOSE</button>
+                <button type="button" class="btn btn-danger entity_action" disabled data-item_id="{{item.id}}" data-action="lose">LOSE</button>
             {% endif %}
         </li>
         <li>
-            <div class="input-group">
-                <span class="input-group-btn">
-                    {% if process %}
-                        <button type="button" class="btn btn-success" data-action="process">PROCESS</button>
-                    {% else %}
-                        <button type="button" class="btn btn-danger" disabled data-action="process">PROCESS</button>
-                    {% endif %}
-                </span>
-                <input type="text" class="form-control" placeholder="BLA">
-            </div>
+            {% if process %}
+                <button type="button" class="btn btn-success entity_action" data-modal_type="" data-modal_id="circulation_process" data-item_id="{{item.id}}" data-action="process">PROCESS</button>
+            {% else %}
+                <button type="button" class="btn btn-danger entity_action" disabled data-modal_type="" data-modal_id="circulation_process" data-item_id="{{item.id}}" data-action="process">PROCESS</button>
+            {% endif %}
         </li>
         <li>
             {% if overdue %}
-                <button type="button" class="btn btn-success" data-action="overdue">OVERDUE</button>
+                <button type="button" class="btn btn-success entity_action" data-item_id="{{item.id}}" data-action="overdue">OVERDUE</button>
             {% else %}
-                <button type="button" class="btn btn-danger" disabled data-action="overdue">OVERDUE</button>
+                <button type="button" class="btn btn-danger entity_action" disabled data-item_id="{{item.id}}" data-action="overdue">OVERDUE</button>
             {% endif %}
         </li>
         <li>
             {% if return_missing %}
-                <button type="button" class="btn btn-success" data-action="return_missing">RETURN MISSING</button>
+                <button type="button" class="btn btn-success entity_action" data-item_id="{{item.id}}" data-action="return_missing_items">RETURN MISSING</button>
             {% else %}
-                <button type="button" class="btn btn-danger" disabled data-action="return_missing">RETURN MISSING</button>
+                <button type="button" class="btn btn-danger entity_action" disabled data-item_id="{{item.id}}" data-action="return_missing_items">RETURN MISSING</button>
             {% endif %}
         </li>
     </ul>
 </div>
+
+{{ description_modal('circulation_process', 'Enter Process Reason', [('reason', 'Reason')])}}

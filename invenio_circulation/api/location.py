@@ -1,13 +1,13 @@
-from invenio_circulation.models import (CirculationLocation,
-                                                CirculationEvent)
+import invenio_circulation.models as models
+
 from invenio_circulation.api.event import create as create_event
 from invenio_circulation.api.utils import update as _update
 
 
 def create(code, name, notes):
-    cl = CirculationLocation.new(code=code, name=name, notes=notes)
+    cl = models.CirculationLocation.new(code=code, name=name, notes=notes)
     create_event(location_id=cl.id,
-                 event=CirculationEvent.EVENT_LOCATION_CREATE)
+                 event=models.CirculationLocation.EVENT_CREATE)
     return cl
 
 
@@ -19,13 +19,13 @@ def update(cl, **kwargs):
                                                 changed[key])
                        for key in changed]
         create_event(location_id=cl.id,
-                     event=CirculationEvent.EVENT_LOCATION_CHANGE,
+                     event=models.CirculationLocation.EVENT_CHANGE,
                      description=', '.join(changes_str))
 
 
 def delete(cl):
     create_event(location_id=cl.id,
-                 event=CirculationEvent.EVENT_LOCATION_DELETE)
+                 event=models.CirculationLocation.EVENT_DELETE)
     cl.delete()
 
 

@@ -19,7 +19,6 @@
 #}
 
 {%- extends 'circulation_base.html' -%}
-{% from 'macros.html' import editor %}
 
 {%- block css %}
     {{ super() }}
@@ -28,19 +27,36 @@
 
 {%- block javascript -%}
     {{ super() }}
-    {% assets "invenio_circulation_entity_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+    {% assets "invenio_circulation_lists_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
 {%- endblock javascript -%}
 
 {%- block circulation_body -%}
-    <div class="row">
-        <div class="col-md-10">{{ editor(editor_data, editor_schema, suggestions_config) }}</div>
-        <div class="col-md-2" id="entity_update">
-            <button type="button" class="btn btn-default btn-success btn-block" id="entity_update_button">UPDATE</button>
-        </div>
-    </div>
-
-    {% for aggregation in aggregations %}
-        {{aggregation|safe}} 
+    <table class="table table-condensed">
+        <tr>
+            <th>Borrower</th>
+            <th>CCID</th>
+            <th>Item</th>
+            <th>Edition</th>
+            <th>Location</th>
+            <th>Barcode</th>
+            <th>Start date</th>
+            <th>Actions</th>
+        </tr>
+    {% for clc in clcs %}
+        <tr>
+            <td>{{clc.user.name}}</td>
+            <td>{{clc.user.ccid}}</td>
+            <td>{{clc.item.record.title}}</td>
+            <td>{{clc.item.record.edition}}</td>
+            <td>{{clc.item.shelf_number}}</td>
+            <td>{{clc.item.barcode}}</td>
+            <td>{{clc.start_date}}</td>
+            <td class="col-md-2">
+                <button type="button" class="btn btn-default entity_action" data-clc_id="{{clc.id}}" data-action="transform_to_loan">CREATE LOAN</button>
+            </td>
+        </tr>
     {% endfor %}
+    </table>
+
 
 {%- endblock -%}

@@ -4,14 +4,12 @@ import json
 import invenio_circulation.api as api
 import invenio_circulation.models as models
 
-from invenio_circulation.views.utils import (datetime_serial,
-                                             flatten,
-                                             _get_cal_heatmap_dates,
-                                             _get_cal_heatmap_range,
-                                             send_signal)
+from invenio_circulation.views.utils import (
+        datetime_serial, flatten, _get_cal_heatmap_dates,
+        _get_cal_heatmap_range, send_signal, get_user)
 from invenio_circulation.api.utils import ValidationExceptions
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, flash
 
 
 blueprint = Blueprint('user', __name__, url_prefix='/circulation',
@@ -19,15 +17,22 @@ blueprint = Blueprint('user', __name__, url_prefix='/circulation',
                       static_folder='../static')
 
 
-@blueprint.route('/user/<user_id>', methods=['GET'])
-def users_current_holds(user_id):
+@blueprint.route('/user', methods=['GET'])
+@blueprint.route('/user/', methods=['GET'])
+def users_current_holds():
+    from flask_login import current_user
     from invenio_circulation.signals import user_current_holds
 
-    obj = models.CirculationUser.get(user_id)
-    editor_data = json.dumps(obj.jsonify(), default=datetime_serial)
-    editor_schema = json.dumps(obj._json_schema, default=datetime_serial)
+    try:
+        user = get_user(current_user)
+    except AttributeError:
+        # Anonymous User
+        return render_template('invenio_theme/401.html')
 
-    holds = send_signal(user_current_holds, 'user_current_holds', user_id)
+    editor_schema = json.dumps(user._json_schema, default=datetime_serial)
+    editor_data = json.dumps(user.jsonify(), default=datetime_serial)
+
+    holds = send_signal(user_current_holds, 'user_current_holds', user.id)
 
     return render_template('user/user_overview.html',
                            editor_data=editor_data,
@@ -35,13 +40,16 @@ def users_current_holds(user_id):
                            holds=flatten(holds))
 
 
-@blueprint.route('/user/<user_id>/record/<record_id>', methods=['GET'])
-@blueprint.route('/user/<user_id>/record/<record_id>/<state>', methods=['GET'])
-def user_record_actions(user_id, record_id, state=None):
+@blueprint.route('/user/record/<record_id>', methods=['GET'])
+@blueprint.route('/user/record/<record_id>/<state>', methods=['GET'])
+def user_record_actions(record_id, state=None):
+    from flask_login import current_user
+
     try:
-        user = models.CirculationUser.get(user_id)
-    except Exception:
+        user = get_user(current_user)
+    except AttributeError:
         user = None
+
     record = models.CirculationRecord.get(record_id)
 
     start_date, end_date, waitlist, delivery = _get_state(state)
@@ -59,6 +67,41 @@ def user_record_actions(user_id, record_id, state=None):
                            end_date=end_date.isoformat(),
                            waitlist=waitlist, delivery=delivery,
                            cal_range=cal_range, cal_data={})
+
+
+@blueprint.route('/api/user/run_action', methods=['POST'])
+def api_user_run_action():
+    from flask_login import current_user
+    from invenio_circulation.signals import run_action, convert_params
+    from invenio_circulation.api.utils import ValidationExceptions
+    from invenio_circulation.views.utils import get_user
+
+    data = json.loads(request.get_json())
+
+    # We restrict the possibilities a bit
+    if data['action'] not in ['request', 'loan_extension', 'cancel_clcs']:
+        return ('', 500)
+
+    try:
+        user = get_user(current_user)
+    except AttributeError:
+        return ('', 500)
+
+    res = send_signal(convert_params, data['action'], data)
+    for key, value in reduce(lambda x, y: dict(x, **y), res).items():
+        data[key] = value
+
+    data['user'] = user
+
+    try:
+        message = send_signal(run_action, data['action'], data)[0]
+    except ValidationExceptions:
+        flash(('The desired action failed, click *CHECK PARAMETERS* '
+               'for more information.'), 'danger')
+        return ('', 500)
+
+    flash(message)
+    return ('', 200)
 
 
 def _get_state(state):

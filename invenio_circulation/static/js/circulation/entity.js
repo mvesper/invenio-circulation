@@ -20,14 +20,12 @@
 define(
     [
         'jquery',
+        'node_modules/cal-heatmap/cal-heatmap',
         'js/other/jsoneditor.min',
-        //'node_modules/dom/index',
-        //'node_modules/xtend/immutable',
-        //'node_modules/xtend/mutable',
-        //'node_modules/typeahead/typeahead',
         'node_modules/jquery.tabbable/jquery.tabbable',
+        'node_modules/bootstrap-datepicker/js/bootstrap-datepicker',
     ],
-function($, _, _im, _m, __, ___) {
+function($, ch, _, __, _bdp) {
 
     function get_entity_id(){
         var url_parts = document.URL.split('/');
@@ -187,6 +185,7 @@ function($, _, _im, _m, __, ___) {
                 setTimeout(run, 1000);
             }
 
+            /*
             $(elem).typeahead({minLength: 1},
                 {name: field_name, source: search_entities}
             ).on('typeahead:selected', function (event, data) {
@@ -201,6 +200,7 @@ function($, _, _im, _m, __, ___) {
 
                 $.tabNext();
             });
+            */
 
         });
     }
@@ -228,27 +228,6 @@ function($, _, _im, _m, __, ___) {
         }
     });
 
-    $('#entity_actions').on("click", function(event){
-        var data = get_entity_id();
-        var entity = data[0];
-        var id = data[1];
-        var func = event.target.id;
-
-        function success(data) {
-            $(document).scrollTop(0);
-            window.location.reload();
-        }
-
-        $.ajax({
-            type: "POST",
-            url: "/circulation/api/entity/run_action",
-            data: JSON.stringify(JSON.stringify({'entity': entity, 'id': id, 'function': func})),
-            success: success,
-            contentType: 'application/json',
-        });
-    });
-    
-
     $('#entity_search_result').on("click", ".entity_delete", function(event){
         var decision = confirm('Do you really want to delete this entity?');
         if (!decision){
@@ -272,14 +251,4 @@ function($, _, _im, _m, __, ___) {
             contentType: 'application/json',
         });
     });
-
-    $(document).ready(function(){
-        if($('#circulation_alert').length){
-            function hide_circulation_alert(){
-                $('#circulation_alert').fadeOut(1000);
-            }
-            setTimeout(hide_circulation_alert, 5000);
-        }
-    });
-}
-);
+});

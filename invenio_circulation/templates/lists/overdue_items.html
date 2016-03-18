@@ -19,6 +19,7 @@
 #}
 
 {%- extends 'circulation_base.html' -%}
+{% from 'macros.html' import description_modal %}
 
 {%- block css %}
     {{ super() }}
@@ -27,7 +28,7 @@
 
 {%- block javascript -%}
     {{ super() }}
-    {% assets "invenio_circulation_circulation_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+    {% assets "invenio_circulation_lists_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
 {%- endblock javascript -%}
 
 {%- block circulation_body -%}
@@ -36,10 +37,9 @@
             <th>Borrower</th>
             <th>CCID</th>
             <th>Item</th>
-            <th>Edition</th>
-            <th>Location</th>
             <th>Barcode</th>
             <th>Start date</th>
+            <th>End date</th>
             <th>Actions</th>
         </tr>
     {% for clc in clcs %}
@@ -47,18 +47,16 @@
             <td>{{clc.user.name}}</td>
             <td>{{clc.user.ccid}}</td>
             <td>{{clc.item.record.title}}</td>
-            <td>{{clc.item.record.edition}}</td>
-            <td>{{clc.item.shelf_number}}</td>
             <td>{{clc.item.barcode}}</td>
             <td>{{clc.start_date}}</td>
+            <td>{{clc.end_date}}</td>
             <td class="col-md-2">
-                {% for action, name in actions %}
-                    <button type="button" class="btn btn-default" data-clc_id="{{clc.id}}" data-action="{{action}}">{{name}}</button>
-                {% endfor %}
+                <button type="button" class="btn btn-default entity_action"  data-modal_type="" data-modal_id="circulation_message"  data-user_id="{{clc.user.id}}" data-subject="Request Cancelation" data-action="send_message">SEND MESSAGE</button>
             </td>
         </tr>
     {% endfor %}
     </table>
 
+    {{ description_modal('circulation_message', 'Enter Message', [('message', 'Message')])}}
 
 {%- endblock -%}

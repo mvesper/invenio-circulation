@@ -48,6 +48,8 @@ def _circulation_current_state(sender, data):
 def _circulation_search(sender, data):
     def wrapped():
         import invenio_circulation.models as models
+        from invenio_circulation.views.utils import send_signal
+        from invenio_circulation.signals import get_circulation_user_info
 
         search = data['search']
         item_ids = data['item_ids']
@@ -57,6 +59,14 @@ def _circulation_search(sender, data):
         items = models.CirculationItem.search(search)
         records = models.CirculationRecord.search(search)
         users = models.CirculationUser.search(search)
+
+        # Try to get a user from somewhere else
+        if not users:
+            try:
+                users = [send_signal(get_circulation_user_info,
+                                     None, search)[0]]
+            except Exception:
+                pass
 
         if items and records:
             items = []

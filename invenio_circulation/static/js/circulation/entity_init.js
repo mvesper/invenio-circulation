@@ -18,9 +18,6 @@
  */
 
 require([
-    //'jquery',
-    //'js/other/jsoneditor.min',
-    //'jquery-tabbable',
     'js/circulation/entity',
-    //'typeahead',
+    'js/circulation/entity_actions'
 ], function() {});

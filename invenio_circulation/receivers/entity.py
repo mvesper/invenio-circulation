@@ -1,10 +1,10 @@
 from invenio_circulation.signals import (entities_overview,
-                                                 entities_hub_search,
-                                                 entity,
-                                                 entity_suggestions,
-                                                 entity_aggregations,
-                                                 entity_class,
-                                                 entity_name)
+                                         entities_hub_search,
+                                         entity,
+                                         entity_suggestions,
+                                         entity_aggregations,
+                                         entity_class,
+                                         entity_name)
 
 
 def _entities_overview(sender, data):
@@ -168,9 +168,26 @@ def _get_location_aggregations(id):
 
 
 def _get_loan_cycle_aggregations(id):
+    import json
     import invenio_circulation.models as models
+    import invenio_circulation.api as api
 
     from flask import render_template
+    from invenio_circulation.api.utils import ValidationExceptions
+    from invenio_circulation.views.utils import (
+            _get_cal_heatmap_dates, _get_cal_heatmap_range)
+
+    def _try(func, item):
+        try:
+            func([item])
+            return True
+        except ValidationExceptions:
+            return False
+
+    def make_dict(clc):
+        return {'clc': clc,
+                'cal_data': json.dumps(_get_cal_heatmap_dates([clc.item])),
+                'cal_range': _get_cal_heatmap_range([clc.item])}
 
     clc = models.CirculationLoanCycle.get(id)
     items = [clc.item]
@@ -178,9 +195,17 @@ def _get_loan_cycle_aggregations(id):
     events = models.CirculationEvent.search('loan_cycle_id:{0}'.format(id))
     events = sorted(events, key=lambda x: x.creation_date)
 
-    return [render_template('aggregations/user.html', users=users),
+    cancel = _try(api.loan_cycle.try_cancel_clcs, clc)
+    loan_extension = make_dict(clc)
+    overdue = _try(api.loan_cycle.try_overdue_clcs, clc)
+
+    return [render_template('aggregations/loan_cycle_functions.html',
+                            cancel=cancel, loan_extension=loan_extension,
+                            overdue=overdue),
+            render_template('aggregations/user.html', users=users),
             render_template('aggregations/item.html', items=items),
-            render_template('aggregations/event.html', events=events)]
+            render_template('aggregations/event.html', events=events),
+            render_template('user/user_time_pick_modal.html')]
 
 
 def _get_user_aggregations(id):
@@ -188,11 +213,28 @@ def _get_user_aggregations(id):
 
     from flask import render_template
 
+    query = 'user_id:{0} AND current_status:{1}'
+
+    q = query.format(id, models.CirculationLoanCycle.STATUS_ON_LOAN)
+    l_clcs = models.CirculationLoanCycle.search(q)
+
+    q = query.format(id, models.CirculationLoanCycle.STATUS_REQUESTED)
+    r_clcs = models.CirculationLoanCycle.search(q)
+
+    q = query.format(id, models.CirculationLoanCycle.STATUS_FINISHED)
+    f_clcs = models.CirculationLoanCycle.search(q)
+
+    return [render_template('aggregations/user_loan_cycles.html',
+                            loan_loan_cycles=l_clcs,
+                            request_loan_cycles=r_clcs,
+                            finished_loan_cycles=f_clcs)]
+    '''
     clcs = models.CirculationLoanCycle.search('user_id:{0}'.format(id))
     items = [x.item for x in clcs if x.current_status == 'on_loan']
 
     return [render_template('aggregations/item.html', items=items),
             render_template('aggregations/loan_cycle.html', loan_cycles=clcs)]
+    '''
 
 
 def _get_record_aggregations(id):
@@ -229,8 +271,8 @@ def _get_item_aggregations(id):
     return_missing = _try(api.item.try_return_missing_items, item)
 
     return [render_template('aggregations/item_functions.html',
-                            lose=lose, process=process, overdue=overdue,
-                            return_missing=return_missing),
+                            item=item, lose=lose, process=process,
+                            overdue=overdue, return_missing=return_missing),
             render_template('aggregations/record.html', records=[record]),
             render_template('aggregations/loan_cycle.html', loan_cycles=clcs)]
 

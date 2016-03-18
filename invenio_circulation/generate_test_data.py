@@ -1,18 +1,15 @@
 def create_indices(app):
     from invenio_circulation.models import entities
-    from invenio_circulation.mappings import mappings
 
     for name, _, cls in filter(lambda x: x[0] != 'Record', entities):
-        mapping = mappings.get(name, {})
         index = cls.__tablename__
         cls._es.indices.delete(index=index, ignore=404)
-        cls._es.indices.create(index=index, body=mapping)
+        cls._es.indices.create(index=index, body=cls._mappings)
 
     from elasticsearch import Elasticsearch
 
     es = Elasticsearch()
     es.indices.delete(index=app.config['INDEXER_DEFAULT_INDEX'], ignore=404)
-    # es.indices.create(index=app.config['INDEXER_DEFAULT_INDEX'])
 
 
 def create_records():
@@ -25,24 +22,26 @@ def create_records():
 
     indexer = RecordIndexer()
 
-    with open('/tmp/demo_record_json_data.json', 'r') as f:
+    source = '/Users/maves/Work/tmp/invenio3/demo_record_json_data.json'
+    with open(source, 'r') as f:
         data = json.loads(f.read())
 
     res = []
     for d in data:
         rec_uuid = str(uuid.uuid4())
         res.append(rec_uuid)
+        d['uuid'] = rec_uuid
         r = Record.create(d, id_=rec_uuid)
         indexer.index(r)
 
-    db.session.commit()
+    # TODO: don't know if this one is needed
+    # db.session.commit()
 
     return res
 
 
 def generate(app=None):
     import datetime
-
     import invenio_circulation.models as models
     import invenio_circulation.api as api
 
@@ -71,11 +70,13 @@ def generate(app=None):
     item6 = api.item.create(rid, 1, 'isbn6', 'barcode6', 'books', 'shelf6',
                             'vol1', '', 'on_shelf',
                             models.CirculationItem.GROUP_BOOK)
+    item7 = api.item.create(rid, 1, 'isbn7', 'barcode7', 'books', 'shelf7',
+                            'vol1', '', 'on_shelf',
+                            models.CirculationItem.GROUP_BOOK)
 
-    user = api.user.create(1, 'ccid1', 'John Doe', 'Random Street', 'Mailbox',
-                           'john.doe@mail.com', 'phone1', '',
+    user = api.user.create(None, 'ccid1', 'John Doe', 'Random Street',
+                           'Mailbox', 'john.doe@mail.com', 'phone1', '',
                            models.CirculationUser.GROUP_DEFAULT)
-
 
     header = 'Dear Mr/Mrs/Ms {{name}}'
     content = ('\nYou successfully {{action}} the following item(s)\n'
@@ -139,13 +140,17 @@ def generate(app=None):
     end_date = start_date + datetime.timedelta(weeks=4)
     api.circulation.request_items(user, [item5], start_date, end_date)
 
+    # Item with shorter loan_period
+    start_date = datetime.date.today()
+    end_date = start_date + datetime.timedelta(weeks=2)
 
-def grant_access_rights():
+    clc = api.circulation.loan_items(user, [item7], start_date, end_date)[0]
+
+
+def grant_access_rights(user):
     from invenio_db import db
-    from invenio_accounts.models import User
     from invenio_access.models import ActionUsers
     from invenio_circulation.acl import circulation_admin_action
 
-    admin = User.query.all()[0]
-    db.session.add(ActionUsers.allow(circulation_admin_action, user=admin))
+    db.session.add(ActionUsers.allow(circulation_admin_action, user=user))
     db.session.commit()

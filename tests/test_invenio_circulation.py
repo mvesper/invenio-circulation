@@ -28,7 +28,6 @@
 from __future__ import absolute_import, print_function
 
 from flask import Flask
-from flask_babelex import Babel
 
 from invenio_circulation import InvenioCirculation
 
@@ -50,13 +49,3 @@ def test_init():
     assert 'invenio-circulation' not in app.extensions
     ext.init_app(app)
     assert 'invenio-circulation' in app.extensions
-
-
-def test_view(app):
-    """Test view."""
-    Babel(app)
-    InvenioCirculation(app)
-    with app.test_client() as client:
-        res = client.get("/")
-        assert res.status_code == 200
-        assert 'Welcome to invenio-circulation' in str(res.data)

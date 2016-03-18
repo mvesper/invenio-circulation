@@ -1,7 +1,5 @@
-from invenio_circulation.signals import (try_action,
-                                                 run_action,
-                                                 convert_params,
-                                                 circ_apis)
+from invenio_circulation.signals import (try_action, run_action,
+                                         convert_params, circ_apis)
 
 
 def _get_action(action, try_action=False):
@@ -12,7 +10,10 @@ def _get_action(action, try_action=False):
                'return': (api.circulation, 'return_items'),
                'cancel_clcs': (api.loan_cycle, 'cancel_clcs'),
                'loan_extension': (api.loan_cycle, 'loan_extension'),
-               'lose_items': (api.item, 'lose_items')}
+               'lose_items': (api.item, 'lose_items'),
+               'return_missing_items': (api.item, 'return_missing_items'),
+               'send_message': (api.user, 'send_message'),
+               'transform_to_loan': (api.loan_cycle, 'transform_to_loan')}
 
     try_action = 'try_' if try_action else ''
 
@@ -42,7 +43,7 @@ def _run_action(action, data):
     try:
         filter_params(_get_action(action), **data)
         res = _get_message(action, data)
-    except KeyError:
+    except KeyError as e:
         res = None
 
     return {'name': 'circulation', 'result': res}
@@ -56,6 +57,14 @@ def _convert_params(action, data):
         user = models.CirculationUser.get(data['users'][0])
     except Exception:
         user = None
+
+    if not user:
+        try:
+            user = models.CirculationUser.get(data['user_id'])
+        except Exception:
+            user = None
+
+    users = [user] if user else None
 
     try:
         items = [models.CirculationItem.get(x) for x in data['items']]
@@ -93,7 +102,7 @@ def _convert_params(action, data):
     except Exception:
         red = None
 
-    res = {'user': user, 'items': items, 'clcs': clcs,
+    res = {'user': user, 'users': users, 'items': items, 'clcs': clcs,
            'start_date': start_date, 'end_date': end_date,
            'requested_end_date': red}
 
@@ -121,7 +130,7 @@ def _get_message(action, data):
         return render_template('messages/cancel_clc.msg',
                                item_barcodes=barcodes)
     elif action == 'loan_extension':
-        barcodes = ','.join(x.barcode for x in data['items'])
+        barcodes = ','.join(x.item.barcode for x in data['clcs'])
         return render_template('messages/loan_extension.msg',
                                item_barcodes=barcodes)
     elif action == 'lose_items':

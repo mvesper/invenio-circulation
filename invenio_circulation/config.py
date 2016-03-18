@@ -1,7 +1,7 @@
 from celery.schedules import crontab
 
 
-DEFAULT_LOAN_PERIOD = 28 # in days
+DEFAULT_LOAN_PERIOD = 28    # in days
 
 CHECKER_CELERYBEAT_SCHEDULE = {
     'checker-beat': {
@@ -10,5 +10,4 @@ CHECKER_CELERYBEAT_SCHEDULE = {
     }
 }
 
-# XXX DO NOT COMMIT
 CELERYBEAT_SCHEDULE = CHECKER_CELERYBEAT_SCHEDULE

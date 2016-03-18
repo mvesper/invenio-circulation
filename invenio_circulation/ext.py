@@ -62,7 +62,6 @@ class InvenioCirculation(object):
         app.register_blueprint(lists_blueprint)
         app.extensions['invenio-circulation'] = self
 
-
     def init_config(self, app):
         """Initialize configuration."""
         app.config.setdefault(

@@ -1,0 +1,26 @@
+{% from 'macros.html' import description_modal %}
+
+<h3>Functions<h3>
+<div class="col-md-12" id="entity_actions">
+    <ul class="list-unstyled">
+        <li>
+            {% if cancel %}
+                <button type="button" class="btn btn-success entity_action" data-modal_type="" data-modal_id="circulation_cancel" data-clc_id="{{loan_extension.clc.id}}" data-action="cancel_clcs">CANCEL</button>
+            {% else %}
+                <button type="button" class="btn btn-danger entity_action" disabled data-modal_type="" data-modal_id="circulation_cancel" data-clc_id="{{loan_extension.clc.id}}" data-action="cancel_clcs">CANCEL</button>
+            {% endif %}
+        </li>
+        <li>
+            <button type="button" class="btn btn-default entity_action modal_time_pick" data-modal_type="time_pick" data-modal_attr="requested_end_date" data-check_on_change="" data-clc_id="{{loan_extension.clc.id}}" data-cal_data="{{loan_extension.cal_data}}" data-action="loan_extension">LOAN EXTENSION</button>
+        </li>
+        <li>
+            {% if overdue %}
+                <button type="button" class="btn btn-success entity_action" data-clc_id="{{loan_extension.clc.id}}" data-action="overdue">OVERDUE</button>
+            {% else %}
+                <button type="button" class="btn btn-danger entity_action" disabled data-clc_id="{{loan_extension.clc.id}}" data-action="overdue">OVERDUE</button>
+            {% endif %}
+        </li>
+    </ul>
+</div>
+
+{{ description_modal('circulation_cancel', 'Enter Cancelation Reason', [('reason', 'Reason')])}}

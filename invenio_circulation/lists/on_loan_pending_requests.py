@@ -4,20 +4,18 @@ from flask import render_template
 class OnLoanPendingRequests(object):
     @classmethod
     def entrance(cls):
-        from invenio_circulation.models import (CirculationItem,
-                                                        CirculationLoanCycle)
-        query = 'current_status:{0}'.format(CirculationItem.STATUS_ON_LOAN)
-        status_req = CirculationLoanCycle.STATUS_REQUESTED
+        from invenio_circulation.models import CirculationLoanCycle
 
-        res = []
-        for item in CirculationItem.search(query):
-            query1 = 'current_status:{0} item_id:{1}'.format(status_req,
-                                                             item.id)
-            if CirculationLoanCycle.search(query1):
-                res.append(item)
+        q1 = 'current_status:{0}'.format(CirculationLoanCycle.STATUS_ON_LOAN)
+        q2 = 'current_status:{0}'.format(CirculationLoanCycle.STATUS_REQUESTED)
 
-        return render_template('lists/display_items.html',
-                               active_nav='lists', items=res)
+        loan_clcs = CirculationLoanCycle.search(q1)
+        req_clcs = set(x.item.id for x in CirculationLoanCycle.search(q2))
+
+        res = [clc for clc in loan_clcs if clc.item.id in req_clcs]
+
+        return render_template('lists/on_loan_pending_requests.html',
+                               active_nav='lists', clcs=res)
 
     @classmethod
     def detail(cls, query):

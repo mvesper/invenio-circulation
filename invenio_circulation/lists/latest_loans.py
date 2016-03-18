@@ -24,7 +24,6 @@ class LatestLoans(object):
         def check(clc):
             return start_date <= clc.start_date <= end_date
 
-
         clcs = [x for x in CirculationLoanCycle.get_all() if check(x)]
 
         return render_template('lists/latest_loans_detail.html',
