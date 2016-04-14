@@ -7,16 +7,13 @@ class OnShelfPendingRequests(object):
         from invenio_circulation.models import (CirculationItem,
                                                 CirculationLoanCycle)
 
-        q1 = 'current_status:{0}'.format(CirculationItem.STATUS_ON_SHELF)
-        q2 = 'current_status:{0}'.format(CirculationLoanCycle.STATUS_REQUESTED)
+        query = 'current_status:{0} AND item.current_status:{1}'.format(
+                CirculationLoanCycle.STATUS_REQUESTED,
+                CirculationItem.STATUS_ON_SHELF)
 
-        shelf_items = set(item.id for item in CirculationItem.search(q1))
-        req_clcs = CirculationLoanCycle.search(q2)
-
-        res = [clc for clc in req_clcs if clc.item.id in shelf_items]
-
+        clcs = CirculationLoanCycle.search(query)
         return render_template('lists/on_shelf_pending_requests.html',
-                               active_nav='lists', clcs=res)
+                               active_nav='lists', clcs=clcs)
 
     @classmethod
     def detail(cls, query):

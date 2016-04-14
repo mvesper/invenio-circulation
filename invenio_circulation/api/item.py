@@ -66,8 +66,10 @@ def delete(item):
 def try_lose_items(items):
     exceptions = []
     try:
-        # TODO: change statuses
-        _check_status(['on_shelf', 'on_loan', 'in_process'], items)
+        os = models.CirculationItem.STATUS_ON_SHELF
+        ol = models.CirculationItem.STATUS_ON_LOAN
+        ip = models.CirculationItem.STATUS_IN_PROCESS
+        _check_status([os, ol, ip], items)
     except Exception as e:
         exceptions.append(('item', e))
 
@@ -101,8 +103,7 @@ def lose_items(items):
 def try_return_missing_items(items):
     exceptions = []
     try:
-        # TODO: change statuses
-        _check_status(['missing'], items)
+        _check_status([models.CirculationItem.STATUS_MISSING], items)
     except Exception as e:
         exceptions.append(('item', e))
 
@@ -126,8 +127,7 @@ def return_missing_items(items):
 def try_process_items(items):
     exceptions = []
     try:
-        # TODO: change statuses
-        _check_status(['on_shelf'], items)
+        _check_status([models.CirculationItem.STATUS_ON_SHELF], items)
     except Exception as e:
         exceptions.append(('item', e))
 

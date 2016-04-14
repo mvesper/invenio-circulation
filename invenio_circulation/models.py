@@ -167,12 +167,8 @@ class CirculationObject(object):
                     replace_field(value)
 
         body = Query(query).body
-        # TODO
-        print body
         replace_field(body)
-        print body
-        res = cls._es.search(index=cls.__tablename__, body=body)
-        print res
+        res = cls._es.search(index=cls.__tablename__, body=body, size=100000)
         return [cls.get(x['_id']) for x in res['hits']['hits']]
 
     def save(self):
@@ -336,7 +332,9 @@ class CirculationRecord(CirculationObject):
     @classmethod
     def get(cls, id):
         from invenio_records.api import Record
+
         json = Record.get_record(id)
+
         if json is None:
             raise Exception("A record with id {0} doesn't exist".format(id))
         # json['id'] = id
@@ -401,6 +399,11 @@ class CirculationItem(CirculationObject, db.Model):
     STATUS_ON_LOAN = 'on_loan'
     STATUS_IN_PROCESS = 'in_process'
     STATUS_MISSING = 'missing'
+    STATUS_UNAVAILABLE = 'unavailable'
+
+    ADD_STATUS_BINDING = 'binding'
+    ADD_STATUS_ON_ORDER = 'on_order'
+    ADD_STATUS_REVIEW = 'review'
 
     EVENT_CREATE = 'item_created'
     EVENT_CHANGE = 'item_changed'
@@ -467,7 +470,11 @@ class CirculationItem(CirculationObject, db.Model):
 
     @db.reconstructor
     def init_on_load(self):
-        self.record = CirculationRecord.get(self.record_id)
+        # TODO: Don't know if there is a better way than None
+        try:
+            self.record = CirculationRecord.get(self.record_id)
+        except Exception:
+            self.record = None
 
 
 class CirculationLoanCycle(CirculationObject, db.Model):
@@ -484,6 +491,7 @@ class CirculationLoanCycle(CirculationObject, db.Model):
     desired_start_date = db.Column(db.Date)
     desired_end_date = db.Column(db.Date)
     delivery = db.Column(db.String(255))
+    notes = db.Column(db.String(255))
     issued_date = db.Column(db.DateTime)
     creation_date = db.Column(db.DateTime)
     modification_date = db.Column(db.DateTime)
@@ -493,6 +501,7 @@ class CirculationLoanCycle(CirculationObject, db.Model):
     STATUS_REQUESTED = 'requested'
     STATUS_FINISHED = 'finished'
     STATUS_CANCELED = 'canceled'
+
     STATUS_OVERDUE = 'overdue'
 
     EVENT_CREATE = 'clc_created'
@@ -555,6 +564,8 @@ class CirculationUser(CirculationObject, db.Model):
     name = db.Column(db.String(255))
     address = db.Column(db.String(255))
     mailbox = db.Column(db.String(255))
+    division = db.Column(db.String(255))
+    cern_group = db.Column(db.String(255))
     email = db.Column(db.String(255))
     phone = db.Column(db.String(255))
     notes = db.Column(db.String(255))
@@ -570,6 +581,9 @@ class CirculationUser(CirculationObject, db.Model):
     EVENT_DELETE = 'user_deleted'
     EVENT_MESSAGED = 'user_messaged'
 
+    STATUS_ACTIVE = 'active'
+    STATUS_INACTIVE = 'inactive'
+
     _json_schema = {'type': 'object',
                     'title': 'User',
                     'properties': {
@@ -579,6 +593,8 @@ class CirculationUser(CirculationObject, db.Model):
                         'name': {'type': 'string'},
                         'address': {'type': 'string'},
                         'mailbox': {'type': 'string'},
+                        'division': {'type': 'string'},
+                        'cern_group': {'type': 'string'},
                         'email': {'type': 'string'},
                         'phone': {'type': 'string'},
                         'notes': {'type': 'string'},
@@ -630,6 +646,10 @@ class CirculationLocation(CirculationObject, db.Model):
     id = db.Column(db.BigInteger, primary_key=True, nullable=False)
     code = db.Column(db.String(255))
     name = db.Column(db.String(255))
+    address = db.Column(db.String(255))
+    email = db.Column(db.String(255))
+    phone = db.Column(db.String(255))
+    type = db.Column(db.String(255))
     notes = db.Column(db.String(255))
     creation_date = db.Column(db.DateTime)
     modification_date = db.Column(db.DateTime)
@@ -638,6 +658,11 @@ class CirculationLocation(CirculationObject, db.Model):
     EVENT_CREATE = 'location_created'
     EVENT_CHANGE = 'location_changed'
     EVENT_DELETE = 'location_deleted'
+
+    TYPE_INTERNAL = 'internal'
+    TYPE_EXTERNAL = 'external'
+    TYPE_HIDDEN = 'hidden'
+    TYPE_MAIN = 'main'
 
     _json_schema = {'type': 'object',
                     'title': 'Location',

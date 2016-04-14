@@ -122,6 +122,7 @@ def _get_state(state):
 def _get_record_items(record_id, user, start_date, end_date, waitlist):
     items = []
     query = 'record_id:{0}'.format(record_id)
+
     for item in models.CirculationItem.search(query):
         warnings = []
         try:

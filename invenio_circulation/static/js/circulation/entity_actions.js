@@ -26,33 +26,43 @@ define(
 function($, chs, _bdp) {
     var _data = {};
 
-    $('.entity_action').on('click', function(event) {
-        _data = $(this).data();
-        if (_data.hasOwnProperty('modal_type') == true) {
-            if (_data.modal_type == 'time_pick') {
-                var _cal = JSON.parse($(this).attr('data-cal_data'));
-                cal.update(_cal);
-                $('#circulation_extension_time_pick').modal();
-                return
-            } else {
-                $('#'+_data.modal_id).modal();
-                return
+    function entity_action(event) {
+            _data = $(event.target).data();
+            if (_data.hasOwnProperty('modal_type') == true) {
+                if (_data.modal_type == 'time_pick') {
+                    var _cal = JSON.parse($(event.target).attr('data-cal_data'));
+                    cal.update(_cal);
+                    $('#circulation_extension_time_pick').modal();
+                    return
+                } else {
+                    $('#'+_data.modal_id).modal();
+                    return
+                }
             }
-        }
 
-        function success(data) {
-            _data = {};
-            $(document).scrollTop(0);
-            window.location.reload();
-        }
+            function success(data) {
+                _data = {};
+                $(document).scrollTop(0);
+                window.location.reload();
+            }
 
-        $.ajax({
-            type: "POST",
-            url: "/circulation/api/circulation/run_action",
-            data: JSON.stringify(JSON.stringify(_data)),
-            success: success,
-            contentType: 'application/json',
-        });
+            $.ajax({
+                type: "POST",
+                url: "/circulation/api/circulation/run_action",
+                data: JSON.stringify(JSON.stringify(_data)),
+                success: success,
+                contentType: 'application/json',
+            });
+    }
+
+    $('.entity_action').on('click', entity_action);
+
+
+    $('.entity_action_confirm').on('click', function(event){
+        //confirmation = confirm('Are you sure that you want to perform this action?');
+        if (confirm('Are you sure that you want to perform this action?')) {
+            entity_action(event);
+        }
     });
 
     $('.modal_submit').on('click', function(event) {
@@ -76,7 +86,6 @@ function($, chs, _bdp) {
     });
 
     $('.modal_value').on('change', function(event){
-        // TODO: This needs to be changed now :(
         if (Object.keys(_data).length == 0) { //Otherwise an error occurs on load
             return
         }
@@ -120,6 +129,10 @@ function($, chs, _bdp) {
         }
         cal = chs.setup('#modal-cal-heatmap');
     });
+
+    $('.modal_form').on('shown.bs.modal', function () {
+        $(this).find('.modal_value')[0].focus();
+    })
 
     $('.circulation_date').datepicker({ format: 'yyyy-mm-dd'});
 });

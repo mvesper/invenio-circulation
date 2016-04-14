@@ -44,12 +44,24 @@
         </tr>
     {% for clc in clcs %}
         <tr>
-            <td>{{clc.user.name}}</td>
-            <td>{{clc.user.ccid}}</td>
-            <td>{{clc.item.record.title}}</td>
-            <td>{{clc.item.record.edition}}</td>
-            <td>{{clc.item.shelf_number}}</td>
-            <td>{{clc.item.barcode}}</td>
+            {% if clc.user %}
+                <td>{{clc.user.name}}</td>
+                <td>{{clc.user.ccid}}</td>
+            {% else %}
+                <td></td>
+                <td></td>
+            {% endif %}
+            {% if clc.item %}
+                <td>{{clc.item.record.title}}</td>
+                <td>{{clc.item.record.edition}}</td>
+                <td>{{clc.item.shelf_number}}</td>
+                <td>{{clc.item.barcode}}</td>
+            {% else %}
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            {% endif %}
             <td>{{clc.start_date}}</td>
             <td class="col-md-2">
                 {% for action, name in actions %}

@@ -67,7 +67,7 @@ def try_cancel_clcs(clcs):
         raise ValidationExceptions(exceptions)
 
 
-def cancel_clcs(clcs):
+def cancel_clcs(clcs, reason=''):
     try:
         try_cancel_clcs(clcs)
     except ValidationExceptions as e:
@@ -77,7 +77,8 @@ def cancel_clcs(clcs):
         clc.current_status = models.CirculationLoanCycle.STATUS_CANCELED
         clc.save()
         create_event(loan_cycle_id=clc.id,
-                     event=models.CirculationLoanCycle.EVENT_CANCELED)
+                     event=models.CirculationLoanCycle.EVENT_CANCELED,
+                     description=reason)
 
         update_waitlist(clc)
 

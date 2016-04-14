@@ -19,6 +19,8 @@
 #}
 
 {%- extends 'circulation_base.html' -%}
+
+{% from 'macros.html' import date_selection %}
 {% from 'macros.html' import description_modal %}
 
 {%- block css %}
@@ -34,39 +36,32 @@
 {%- block circulation_body -%}
     <table class="table table-condensed">
         <tr>
-            <th>Borrower</th>
-            <th>CCID</th>
-            <th>Item</th>
-            <th>Barcode</th>
-            <th>Start date</th>
-            <th>End date</th>
+            <th>Type</th>
+            {% for column in table_header %}
+                <th>{{column}}</th>
+            {% endfor %}
             <th>Actions</th>
         </tr>
-    {% for clc in clcs %}
-        <tr>
-            {% if clc.user %}
-                <td>{{clc.user.name}}</td>
-                <td>{{clc.user.ccid}}</td>
-            {% else %}
-                <td></td>
-                <td></td>
-            {% endif %}
-            {% if clc.item %}
-                <td>{{clc.item.record.title}}</td>
-                <td>{{clc.item.barcode}}</td>
-            {% else %}
-                <td></td>
-                <td></td>
-            {% endif %}
-            <td>{{clc.start_date}}</td>
-            <td>{{clc.end_date}}</td>
-            <td class="col-md-2">
-                <button type="button" class="btn btn-default entity_action"  data-modal_type="" data-modal_id="circulation_message"  data-user_id="{{clc.user.id}}" data-subject="Request Cancelation" data-action="send_message">SEND MESSAGE</button>
-            </td>
-        </tr>
-    {% endfor %}
+        {% for item in items %}
+            <tr>
+                <td>{{item.type}}</td>
+                {% for column in item.item %}
+                    <td>{{column}}</td>
+                {% endfor %}
+                <td>
+                    {% for action, name, modal_id in item.positive_actions %}
+                        <button type="button" class="btn btn-success entity_action" data-modal_type="" data-modal_id="{{modal_id}}" data-ill_lc_id="{{item.id}}" data-action="{{action}}">{{name}}</button>
+                    {% endfor %}
+                    {% for action, name in item.negative_actions %}
+                        <button type="button" class="btn btn-danger entity_action" data-ill_lc_id="{{item.id}}" data-action="{{action}}">{{name}}</button>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
     </table>
 
-    {{ description_modal('circulation_message', 'Enter Message', [('message', 'Message')])}}
+{% for modal_id, heading, values in modals %}
+    {{ description_modal(modal_id, heading, values)}}
+{% endfor %}
 
 {%- endblock -%}

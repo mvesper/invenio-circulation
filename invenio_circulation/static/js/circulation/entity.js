@@ -184,24 +184,6 @@ function($, ch, _, __, _bdp) {
                 last_keystroke = new Date();
                 setTimeout(run, 1000);
             }
-
-            /*
-            $(elem).typeahead({minLength: 1},
-                {name: field_name, source: search_entities}
-            ).on('typeahead:selected', function (event, data) {
-                var val = data.value.split(' ')[0];
-                $(event.target).typeahead('val', val);
-                // TODO
-                // No idea why all 3 are necessary ~.~
-                // Otherwise the value is not updated
-                json_editor.getEditor('root.'+field_name).value = val;
-                json_editor.getEditor('root.'+field_name).setValue(val);
-                json_editor.getValue()[field_name] = val;
-
-                $.tabNext();
-            });
-            */
-
         });
     }
 

@@ -34,9 +34,6 @@ def create_records():
         r = Record.create(d, id_=rec_uuid)
         indexer.index(r)
 
-    # TODO: don't know if this one is needed
-    # db.session.commit()
-
     return res
 
 

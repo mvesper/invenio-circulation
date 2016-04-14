@@ -40,6 +40,7 @@ def _get_circulation_user_info(sender, data):
     from invenio_circulation.models import CirculationUser
     from invenio_circulation.cern_ldap import get_user_info
 
+    # TODO DEBUG
     user_info = get_user_info(nickname=data, email=data, ccid=data)
 
     invenio_user_id = None
@@ -47,13 +48,16 @@ def _get_circulation_user_info(sender, data):
     name = user_info['displayName'][0]
     address = ''
     mailbox = user_info['physicalDeliveryOfficeName'][0]
+    division = user_info['division'][0]
+    cern_group = user_info['cernGroup'][0]
     email = user_info['mail'][0]
     phone = user_info['telephoneNumber'][0]
     notes = ''
     group = CirculationUser.GROUP_DEFAULT
 
     user = api.user.create(invenio_user_id, ccid, name, address, mailbox,
-                           email, phone, notes, group)
+                           email, phone, notes, group,
+                           division=division, cern_group=cern_group)
 
     return {'name': 'user', 'result': user}
 

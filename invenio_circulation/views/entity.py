@@ -126,6 +126,18 @@ def api_entity_search(entity, search):
     return json.dumps([x.jsonify() for x in objs], default=datetime_serial)
 
 
+@blueprint.route('/api/entity/search_autocomplete', methods=['POST'])
+@cap.require(403)
+@extract_params
+def api_entity_search_autocomplete(entity, search):
+    from invenio_circulation.signals import entity_autocomplete_search
+
+    q = {'query': {'bool': {'should': {'match': {'content_ngram': search}}}}}
+
+    res = send_signal(entity_autocomplete_search, entity, search)[0]
+    return json.dumps(res)
+
+
 @blueprint.route('/api/entity/create', methods=['POST'])
 @cap.require(403)
 @extract_params

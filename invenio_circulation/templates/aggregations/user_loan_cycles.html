@@ -11,7 +11,11 @@
     {% for lc in loan_loan_cycles %}
         <tr>
             <td><a href="/circulation/entities/loan_cycle/{{lc.id}}">{{lc.id}}</a></td>
-            <td><a href="/circulation/entities/item/{{lc.item.id}}">{{lc.item.record.title}}</a></td>
+            {% if lc.item %}
+                <td><a href="/circulation/entities/item/{{lc.item.id}}">{{lc.item.record.title}}</a></td>
+            {% else %}
+                <td><a href="/circulation/entities/item/"></a></td>
+            {% endif %}
             <td>{{lc.current_status}}</td>
             <td>{{lc.start_date}}</td>
             <td>{{lc.end_date}}</td>
@@ -32,7 +36,11 @@
     {% for lc in request_loan_cycles %}
         <tr>
             <td><a href="/circulation/entities/loan_cycle/{{lc.id}}">{{lc.id}}</a></td>
-            <td><a href="/circulation/entities/item/{{lc.item.id}}">{{lc.item.record.title}}</a></td>
+            {% if lc.item %}
+                <td><a href="/circulation/entities/item/{{lc.item.id}}">{{lc.item.record.title}}</a></td>
+            {% else %}
+                <td><a href="/circulation/entities/item/"></a></td>
+            {% endif %}
             <td>{{lc.current_status}}</td>
             <td>{{lc.start_date}}</td>
             <td>{{lc.end_date}}</td>
@@ -53,7 +61,11 @@
     {% for lc in finished_loan_cycles %}
         <tr>
             <td><a href="/circulation/entities/loan_cycle/{{lc.id}}">{{lc.id}}</a></td>
-            <td><a href="/circulation/entities/item/{{lc.item.id}}">{{lc.item.record.title}}</a></td>
+            {% if lc.item %}
+                <td><a href="/circulation/entities/item/{{lc.item.id}}">{{lc.item.record.title}}</a></td>
+            {% else %}
+                <td><a href="/circulation/entities/item/"></a></td>
+            {% endif %}
             <td>{{lc.current_status}}</td>
             <td>{{lc.start_date}}</td>
             <td>{{lc.end_date}}</td>

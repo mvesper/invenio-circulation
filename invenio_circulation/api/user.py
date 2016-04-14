@@ -7,11 +7,13 @@ from invenio_circulation.api.utils import update as _update
 
 
 def create(invenio_user_id, ccid, name, address, mailbox, email, phone,
-           notes, user_group):
+           notes, user_group, division='', cern_group=''):
     cu = models.CirculationUser.new(
+            current_status=models.CirculationUser.STATUS_ACTIVE,
             invenio_user_id=invenio_user_id, ccid=ccid, name=name,
             address=address, mailbox=mailbox, email=email, phone=phone,
-            notes=notes, user_group=user_group)
+            notes=notes, user_group=user_group,
+            division=division, cern_group=cern_group)
 
     create_event(user_id=cu.id, event=models.CirculationUser.EVENT_CREATE)
 

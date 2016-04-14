@@ -19,5 +19,5 @@
 
 require([
     'js/circulation/lists',
-    'js/circulation/entity_actions'
+    'js/circulation/entity_actions',
 ], function() {});

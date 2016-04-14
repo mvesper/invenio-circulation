@@ -41,7 +41,6 @@ def _cern_ldap_login():
 def get_user_info(nickname="", email="", ccid=""):
     """Query the CERN LDAP server for information about a user.
     Return a dictionary of information"""
-
     try:
         connection = _ldap_connection_pool[get_ident()]
     except KeyError:

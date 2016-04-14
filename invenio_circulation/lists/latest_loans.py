@@ -30,3 +30,18 @@ class LatestLoans(object):
                                active_nav='lists', clcs=clcs,
                                link='latest_loans',
                                start_date=start_date, end_date=end_date)
+        '''
+        from invenio_db import db
+        from invenio_circulation.models import CirculationLoanCycle as CLC
+
+        latest_ids = (db.session.query(CLC.id)
+                      .filter(db.and_(CLC.creation_date >= start_date,
+                                      CLC.creation_date <= end_date))
+                      .distinct())
+        clcs = [CLC.get(x[0]) for x in latest_ids]
+
+        return render_template('lists/latest_loans_detail.html',
+                               active_nav='lists', clcs=clcs,
+                               link='latest_loans',
+                               start_date=start_date, end_date=end_date)
+        '''

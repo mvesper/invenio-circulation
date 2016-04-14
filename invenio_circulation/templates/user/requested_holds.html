@@ -30,11 +30,15 @@
             </tr>
             {% for lc in holds %}
             <tr>
-                <td>{{lc.clc.item.record.title}}</td>
+                {% if lc.clc.item and lc.clc.item.record %}
+                    <td>{{lc.clc.item.record.title}}</td>
+                {% else %}
+                    <td></td>
+                {% endif %}
                 <td>{{lc.clc.start_date}}</td>
                 <td>{{lc.clc.end_date}}</td>
                 <td>
-                    <button type="button" class="btn btn-default entity_action" data-clc_id="{{lc.clc.id}}" data-action="cancel_clcs">CANCEL REQUEST</button>
+                    <button type="button" class="btn btn-default entity_action_confirm" data-clc_id="{{lc.clc.id}}" data-reason="" data-action="cancel_clcs">CANCEL REQUEST</button>
                 </td>
             </tr>
             {% endfor %}

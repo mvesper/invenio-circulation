@@ -18,6 +18,7 @@ entity_new = cs.signal('entity_new')
 entity_create = cs.signal('entity_create')
 entity_update = cs.signal('entity_update')
 entity_delete = cs.signal('entity_delete')
+entity_autocomplete_search = cs.signal('entity_autocomplete_search')
 
 lists_overview = cs.signal('lists_overview')
 lists_class = cs.signal('lists_class')

@@ -1,21 +1,20 @@
 from flask import render_template
+from collections import OrderedDict
 
 
 class OnLoanPendingRequests(object):
     @classmethod
     def entrance(cls):
-        from invenio_circulation.models import CirculationLoanCycle
+        from invenio_circulation.models import (CirculationItem,
+                                                CirculationLoanCycle)
 
-        q1 = 'current_status:{0}'.format(CirculationLoanCycle.STATUS_ON_LOAN)
-        q2 = 'current_status:{0}'.format(CirculationLoanCycle.STATUS_REQUESTED)
+        query = 'current_status:{0} AND item.current_status:{1}'.format(
+                CirculationLoanCycle.STATUS_REQUESTED,
+                CirculationItem.STATUS_ON_LOAN)
 
-        loan_clcs = CirculationLoanCycle.search(q1)
-        req_clcs = set(x.item.id for x in CirculationLoanCycle.search(q2))
-
-        res = [clc for clc in loan_clcs if clc.item.id in req_clcs]
-
+        clcs = CirculationLoanCycle.search(query)
         return render_template('lists/on_loan_pending_requests.html',
-                               active_nav='lists', clcs=res)
+                               active_nav='lists', clcs=clcs)
 
     @classmethod
     def detail(cls, query):

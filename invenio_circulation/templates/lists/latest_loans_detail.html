@@ -45,10 +45,24 @@
         </tr>
     {% for clc in clcs %}
         <tr>
-            <td>{{clc.user.name}}</td>
-            <td>{{clc.user.ccid}}</td>
-            <td>{{clc.item.record.title}}</td>
-            <td>{{clc.item.barcode}}</td>
+            {% if clc.user %}
+                <td>{{clc.user.name}}</td>
+                <td>{{clc.user.ccid}}</td>
+            {% else %}
+                <td></td>
+                <td></td>
+            {% endif %}
+            {% if clc.item %}
+                {% if clc.item.record %}
+                    <td>{{clc.item.record.title}}</td>
+                {% else %}
+                    <td></td>
+                {% endif %}
+                <td>{{clc.item.barcode}}</td>
+            {% else %}
+                <td></td>
+                <td></td>
+            {% endif %}
             <td>{{clc.start_date}}</td>
             <td>{{clc.end_date}}</td>
         </tr>
