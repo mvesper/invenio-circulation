@@ -168,7 +168,7 @@ class CirculationObject(object):
 
         body = Query(query).body
         replace_field(body)
-        res = cls._es.search(index=cls.__tablename__, body=body, size=100000)
+        res = cls._es.search(index=cls.__tablename__, body=body, size=10000)
         return [cls.get(x['_id']) for x in res['hits']['hits']]
 
     def save(self):
@@ -332,15 +332,17 @@ class CirculationRecord(CirculationObject):
     @classmethod
     def get(cls, id):
         from invenio_records.api import Record
+        from invenio_pidstore.models import PersistentIdentifier
 
-        json = Record.get_record(id)
+        _uuid = PersistentIdentifier.get('recid', id).object_uuid
+        json = Record.get_record(_uuid)
 
         if json is None:
             raise Exception("A record with id {0} doesn't exist".format(id))
         # json['id'] = id
 
         obj = CirculationRecord()
-        obj.id = json.id
+        obj.id = id
         for key, func in cls._construction_schema.items():
             try:
                 obj.__setattr__(key, func(json))

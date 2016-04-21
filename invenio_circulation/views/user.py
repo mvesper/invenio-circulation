@@ -12,7 +12,7 @@ from invenio_circulation.api.utils import ValidationExceptions
 from flask import Blueprint, render_template, request, flash
 
 
-blueprint = Blueprint('user', __name__, url_prefix='/circulation',
+blueprint = Blueprint('circulation_user', __name__, url_prefix='/circulation',
                       template_folder='../templates',
                       static_folder='../static')
 

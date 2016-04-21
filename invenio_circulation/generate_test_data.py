@@ -37,15 +37,10 @@ def create_records():
     return res
 
 
-def generate(app=None):
+def create_circulation_entities(rid):
     import datetime
     import invenio_circulation.models as models
     import invenio_circulation.api as api
-
-    create_indices(app)
-    rec_uuids = create_records()
-
-    rid = rec_uuids[0]
 
     location1 = api.location.create('ccl', 'CERN central library', '')
 
@@ -142,6 +137,15 @@ def generate(app=None):
     end_date = start_date + datetime.timedelta(weeks=2)
 
     clc = api.circulation.loan_items(user, [item7], start_date, end_date)[0]
+
+
+def generate(app=None):
+    create_indices(app)
+    rec_uuids = create_records()
+
+    rid = rec_uuids[0]
+
+    create_circulation_entities(rid)
 
 
 def grant_access_rights(user):
