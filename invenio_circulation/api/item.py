@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2015, 2016 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+"""invenio-circulation api responsible for CirculationItem handling."""
+
 import invenio_circulation.models as models
 
 from invenio_circulation.api.utils import ValidationExceptions
@@ -14,6 +35,13 @@ def _check_status(statuses, objs):
 
 
 def try_create(current_status):
+    """Check the conditions to create the item.
+
+    Checked conditions:
+    * The current_status must be 'on_shelf'.
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
     try:
         if current_status not in ['requested', 'ordered', 'claimed',
@@ -28,6 +56,11 @@ def try_create(current_status):
 
 def create(record_id, location_id, isbn, barcode, collection, shelf_number,
            volume, description, current_status, item_group):
+    """Create a CirculationItem object.
+
+    :raise: ValidationExceptions
+    :return: The newly created object.
+    """
     try:
         try_create(current_status)
     except ValidationExceptions as e:
@@ -47,6 +80,7 @@ def create(record_id, location_id, isbn, barcode, collection, shelf_number,
 
 
 def update(item, **kwargs):
+    """Update a CirculationItem object."""
     current_items, changed = _update(item, **kwargs)
     if changed:
         changes_str = ['{0}: {1} -> {2}'.format(key,
@@ -59,11 +93,19 @@ def update(item, **kwargs):
 
 
 def delete(item):
+    """Delete the given CirculationItem."""
     create_event(item_id=item.id, event=models.CirculationItem.EVENT_DELETE)
     item.delete()
 
 
 def try_lose_items(items):
+    """Check the conditions to lose the given items.
+
+    Checked conditions:
+    * The current_status must be 'on_shelf', 'on_loan' or 'in_process'.
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
     try:
         os = models.CirculationItem.STATUS_ON_SHELF
@@ -78,6 +120,14 @@ def try_lose_items(items):
 
 
 def lose_items(items):
+    """Lose the given items.
+
+    This sets the current_status to missing.
+    All CirculationLoanCycles with current_status 'on_loan' or 'requested'
+    associated with the given item will be canceled.
+
+    :raise: ValidationExceptions
+    """
     try:
         try_lose_items(items)
     except ValidationExceptions as e:
@@ -101,6 +151,13 @@ def lose_items(items):
 
 
 def try_return_missing_items(items):
+    """Check the conditions to return the given missing items.
+
+    Checked conditions:
+    * The current_status must be 'missing'.
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
     try:
         _check_status([models.CirculationItem.STATUS_MISSING], items)
@@ -112,6 +169,11 @@ def try_return_missing_items(items):
 
 
 def return_missing_items(items):
+    """Return the missing items.
+
+    The items current_status will be set to 'on_shelf'.
+    :raise: ValidationExceptions
+    """
     try:
         try_return_missing_items(items)
     except ValidationExceptions as e:
@@ -125,6 +187,13 @@ def return_missing_items(items):
 
 
 def try_process_items(items):
+    """Check the conditions to process the items.
+
+    Checked conditions:
+    * The current_status must be 'on_shelf'
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
     try:
         _check_status([models.CirculationItem.STATUS_ON_SHELF], items)
@@ -136,6 +205,13 @@ def try_process_items(items):
 
 
 def process_items(items, description):
+    """Process the given items.
+
+    The items current_status will be set to 'in_process'.
+
+    :param description: The reason of the processing of the items.
+    :raise: ValidationExceptions
+    """
     try:
         try_process_items(items)
     except ValidationExceptions as e:
@@ -150,6 +226,13 @@ def process_items(items, description):
 
 
 def try_return_processed_items(items):
+    """Check the conditions to return the processed items.
+
+    Checked conditions:
+    * The current_status must be 'in_process'
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
     try:
         _check_status([models.CirculationItem.STATUS_IN_PROCESS], items)
@@ -161,6 +244,11 @@ def try_return_processed_items(items):
 
 
 def return_processed_items(items):
+    """Return the given processed items.
+
+    The items current_status will be set to 'on_shelf'.
+    :raise: ValidationExceptions
+    """
     try:
         try_return_processed_items(items)
     except ValidationExceptions as e:
@@ -174,42 +262,29 @@ def return_processed_items(items):
 
 
 def try_overdue_items(items):
+    """Check the conditions to overdue the items.
+
+    This function simply calls api.loan_cycle.try_overdue_clcs.
+    :raise: ValidationExceptions
+    """
     for item in items:
         query = 'item_id:{0} current_status:{1}'.format(
                 item.id,
                 models.CirculationLoanCycle.STATUS_ON_LOAN)
         try_overdue_clcs(models.CirculationLoanCycle.search(query))
-    '''
-    exceptions = []
-    try:
-        _check_status(['on_loan'], items)
-    except Exception as e:
-        exceptions.append(('item', e))
-
-    if exceptions:
-        raise ValidationExceptions(exceptions)
-    '''
 
 
 def overdue_items(items):
+    """Overdue the given items.
+
+    This function simply calls api.loan_cycle.overdue_clcs.
+    :raise: ValidationExceptions
+    """
     for item in items:
         query = 'item_id:{0} current_status:{1}'.format(
                 item.id,
                 models.CirculationLoanCycle.STATUS_ON_LOAN)
         overdue_clcs(models.CirculationLoanCycle.search(query))
-    '''
-    try:
-        try_overdue_items(items)
-    except ValidationExceptions as e:
-        raise e
-
-    for item in items:
-        query = 'item_id:{0} current_status:{1}'.format(
-                item.id,
-                models.CirculationLoanCycle.STATUS_ON_LOAN)
-        clcs = models.CirculationLoanCycle.search(query)
-        overdue_clcs(clcs)
-    '''
 
 
 schema = {'lose_items': [],

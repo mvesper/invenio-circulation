@@ -17,7 +17,7 @@
 # along with Invenio; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""Circulation interface."""
+"""invenio-circulation interface."""
 
 import json
 
@@ -36,6 +36,12 @@ blueprint = Blueprint('circulation', __name__, url_prefix='/circulation',
 @blueprint.route('/circulation/<search_string>', methods=['GET'])
 @cap.require(403)
 def circulation_search(search_string=None):
+    """General circulation user interace.
+
+    A given search_string will be searched for, and the results are translated
+    into a 'circulation_state'. If a search got performed, the page will be
+    redirected to a url with the new state.
+    """
     from invenio_circulation.signals import circulation_current_state
 
     data = send_signal(circulation_current_state, None, search_string)[0]
@@ -69,6 +75,7 @@ def circulation_search(search_string=None):
 @blueprint.route('/api/circulation/run_action', methods=['POST'])
 @cap.require(403)
 def api_circulation_run_action():
+    """Run a circulation api function."""
     from invenio_circulation.signals import run_action, convert_params
     from invenio_circulation.api.utils import ValidationExceptions
 
@@ -93,6 +100,7 @@ def api_circulation_run_action():
 @blueprint.route('/api/circulation/try_action', methods=['POST'])
 @cap.require(403)
 def api_circulation_try_action():
+    """Run a circulation api try_* function."""
     from invenio_circulation.signals import try_action, convert_params
 
     data = json.loads(request.get_json())

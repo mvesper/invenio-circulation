@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2015, 2016 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+"""invenio-circulation api utilities."""
+
 import datetime
 import functools
 
@@ -14,6 +35,11 @@ from invenio_circulation.models import (CirculationLoanCycle,
 
 
 def check_field_in(field_name, values, message):
+    """Check if obj.field_name is in the given values.
+
+    :return: A function to perform the check.
+    :raise: Exception with the provided message.
+    """
     def wrapper(objs):
         def check(obj):
             return obj.__getattribute__(field_name) in values
@@ -23,6 +49,11 @@ def check_field_in(field_name, values, message):
 
 
 def check_field_op(field_name, operator, values, message, negate=False):
+    """Check if obj.field_name <operator> the given values.
+
+    :return: A function to perform the check.
+    :raise: Exception with the provided message.
+    """
     def wrapper(objs):
         def check(obj):
             attr = obj.__getattribute__(field_name)
@@ -36,6 +67,10 @@ def check_field_op(field_name, operator, values, message, negate=False):
 
 
 def try_functions(*funcs):
+    """Execute given functions and gather their exceptions.
+
+    :return: A function to perform the execution.
+    """
     def wrapper(**kwargs):
         exceptions = []
         for name, func in funcs:
@@ -120,6 +155,11 @@ def _check_loan_duration(user, items, start_date, end_date):
 
 
 def update(obj, **kwargs):
+    """Update the attributes of the given object using the provided kwargs.
+
+    If the object was changed, it will be stored to the database.
+    :return: The objects attributes and the changes.
+    """
     current_items = {key: obj.__getattribute__(key) for key in dir(obj)
                      if not callable(obj.__getattribute__(key)) and not
                      key.startswith("__")}
@@ -141,6 +181,11 @@ def update(obj, **kwargs):
 
 
 def email_notification(template_name, sender, receiver, **kwargs):
+    """Send an email.
+
+    :param template_name: The name of the MailTemplate to use.
+    :param kwargs: The keyword arguments to use in the fetched template.
+    """
     try:
         query = 'template_name:{0}'.format(template_name)
         cmt = CirculationMailTemplate.search(query)[0]
@@ -163,7 +208,7 @@ def email_notification(template_name, sender, receiver, **kwargs):
         print msg
 
 
-def compare_query(library_code, item_type, user_group, rule):
+def _compare_query(library_code, item_type, user_group, rule):
     def _compare(val, rule_val):
         if '*' in rule_val:
             tmp = rule_val.replace('*', '')
@@ -183,6 +228,7 @@ def compare_query(library_code, item_type, user_group, rule):
 
 
 def get_loan_rule(user, item):
+    """Get the loan rule responsible for the given user and item."""
     user_group = user.user_group
     item_type = item.item_group
     library_code = item.location.code
@@ -194,7 +240,7 @@ def get_loan_rule(user, item):
     rules = CirculationLoanRuleMatch.search(query)
 
     if not rules:
-        comp = functools.partial(compare_query,
+        comp = functools.partial(_compare_query,
                                  library_code, item_type, user_group)
         rules = sorted([comp(x) for x in CirculationLoanRuleMatch.get_all()],
                        key=lambda x: (1-x[0], 1-x[1], 1-x[2]))
@@ -206,6 +252,7 @@ def get_loan_rule(user, item):
 
 
 def is_renewable(user, items):
+    """Check if the loan of the items is renewable for the given user."""
     try:
         return all(get_loan_rule(user, item).renewable for item in items)
     except Exception:
@@ -213,6 +260,7 @@ def is_renewable(user, items):
 
 
 def get_loan_period(user, items):
+    """Get the allowed loan period for the user and the items."""
     try:
         return max(get_loan_rule(user, item).loan_period for item in items)
     except ValueError:
@@ -220,7 +268,14 @@ def get_loan_period(user, items):
 
 
 class DateException(Exception):
+    """Exception occurring for overlapping date periods.
+
+    Carries information of the dates involved in the overlap and possible
+    alternatives.
+    """
+
     def __init__(self, suggested_dates, contained_dates):
+        """Constructor."""
         self.suggested_dates = suggested_dates
         self.contained_dates = contained_dates
 
@@ -235,19 +290,26 @@ class DateException(Exception):
         self.message = 'The date is already taken, try: ' + ' or '.join(tmp)
 
     def __str__(self):
+        """String representation."""
         return self.message
 
 
 class ValidationExceptions(Exception):
+    """Exception to gather exceptions happening during api.try_* functions."""
+
     def __init__(self, exceptions):
+        """Constructor."""
         self.exceptions = exceptions
 
     def __str__(self):
+        """String representation."""
         return '\n'.join(['{0}: {1}'.format(x, str(y))
                           for x, y in self.exceptions])
 
 
 class DateManager(object):
+    """Utility class to calculate date confilcts."""
+
     _start = datetime.date(1970, 1, 1)
 
     @classmethod
@@ -286,6 +348,15 @@ class DateManager(object):
 
     @classmethod
     def get_contained_date(cls, requested_start, requested_end, periods):
+        """Get the dates contained in requested_start and requested_end.
+
+        :param requested_start: The requested start date.
+        :param requested_end: The requested end date.
+        :param periods: The dates to be checked for conflicts.
+
+        :return: Conflict free values for requested_start, requested_date.
+        :raise: DateException with possible alternatives.
+        """
         try:
             timeline_start, timeline = cls._build_timeline((requested_start,
                                                             requested_end),
@@ -319,6 +390,10 @@ class DateManager(object):
 
     @classmethod
     def get_date_suggestions(cls, periods):
+        """Get available free periods in a list of periods.
+
+        :return: A list of available periods.
+        """
         if not periods:
             return [datetime.date.today()]
         today = datetime.date.today()

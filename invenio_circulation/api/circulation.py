@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2015, 2016 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+"""invenio-circulation api responsible for the item circulation."""
+
 import uuid
 import datetime
 
@@ -61,7 +82,22 @@ def _check_request_start(start_date):
 
 def try_loan_items(user, items, start_date, end_date,
                    waitlist=False, delivery=None):
+    """Check the conditions to loan the given items to the given user.
 
+    Checked conditions:
+    * Item object is valid (not None).
+    * Item is in a valid condition (current_status: on_loan).
+    * User meets the requirements to loan the item.
+    * Given dates are valid (not in the past, not in the future).
+    * Duration is valid.
+
+    :param items: List of CirculationItem.
+    :param user: CirculationUser.
+    :param start_date: Start date of the loan (without time).
+    :param end_date: End date of the loan (without time).
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
     try:
         _check_items(items)
@@ -101,6 +137,19 @@ def try_loan_items(user, items, start_date, end_date,
 
 def loan_items(user, items, start_date, end_date,
                waitlist=False, delivery=None):
+    """Loan given items to the user.
+
+    :param items: List of CirculationItem.
+    :param user: CirculationUser.
+    :param start_date: Start date of the loan (without time).
+    :param end_date: End date of the loan (without time).
+    :param waitlist: If the desired dates are not available, the item will be
+                     put on a waitlist.
+    :param delivery: 'pick_up' or 'internal_mail'
+
+    :return: List of created CirculationLoanCycles
+    :raise: ValidationExceptions
+    """
     try:
         try_loan_items(user, items, start_date, end_date, waitlist)
         desired_start_date = start_date
@@ -148,6 +197,22 @@ def loan_items(user, items, start_date, end_date,
 
 def try_request_items(user, items, start_date, end_date,
                       waitlist=False, delivery=None):
+    """Check the conditions to request the given items for the given user.
+
+    Checked conditions:
+    * Item object is valid (not None).
+    * Item is in a valid condition (current_status: on_loan).
+    * User meets the requirements to loan the item.
+    * Given dates are valid (not in the past).
+    * Duration is valid.
+
+    :param items: List of CirculationItem.
+    :param user: CirculationUser.
+    :param start_date: Start date of the loan (without time).
+    :param end_date: End date of the loan (without time).
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
     try:
         _check_items(items)
@@ -189,6 +254,19 @@ def try_request_items(user, items, start_date, end_date,
 
 def request_items(user, items, start_date, end_date,
                   waitlist=False, delivery=None):
+    """Request given items for the user.
+
+    :param items: List of CirculationItem.
+    :param user: CirculationUser.
+    :param start_date: Start date of the loan (without time).
+    :param end_date: End date of the loan (without time).
+    :param waitlist: If the desired dates are not available, the item will be
+                     put on a waitlist.
+    :param delivery: 'pick_up' or 'internal_mail'
+
+    :return: List of created CirculationLoanCycles
+    :raise: ValidationExceptions
+    """
     try:
         try_request_items(user, items, start_date, end_date, waitlist)
         desired_start_date = start_date
@@ -231,6 +309,16 @@ def request_items(user, items, start_date, end_date,
 
 
 def try_return_items(items):
+    """Check the conditions to return the given items.
+
+    Checked conditions:
+    * Item object is valid (not None).
+    * Item is in a valid condition (current_status: on_loan).
+
+    :param items: List of CirculationItem.
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
     try:
         _check_items(items)
@@ -247,6 +335,13 @@ def try_return_items(items):
 
 
 def return_items(items):
+    """Return given items.
+
+    :param items: List of CirculationItem.
+
+    :return: List of created CirculationLoanCycles
+    :raise: ValidationExceptions
+    """
     try:
         try_return_items(items)
     except ValidationExceptions as e:

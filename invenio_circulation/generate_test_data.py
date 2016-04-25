@@ -1,4 +1,33 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2015 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+"""Development helper module to generate very basic test data."""
+
+
 def create_indices(app):
+    """Create the indices for Invenio Circulation.
+
+    Iterates over every entity in invenio_ciruclation.models.entities and
+    creates the corresponding index.
+
+    :param app: [A/The current] Flask application.
+    """
     from invenio_circulation.models import entities
 
     for name, _, cls in filter(lambda x: x[0] != 'Record', entities):
@@ -13,10 +42,14 @@ def create_indices(app):
 
 
 def create_records():
+    """Create test records.
+
+    deprecated
+    :return: A list of uuids of the created records.
+    """
     import json
     import uuid
 
-    from invenio_db import db
     from invenio_records.api import Record
     from invenio_indexer.api import RecordIndexer
 
@@ -38,6 +71,10 @@ def create_records():
 
 
 def create_circulation_entities(rid):
+    """Create circulation test entities.
+
+    :param rid: Record id of an invenio-records Record.
+    """
     import datetime
     import invenio_circulation.models as models
     import invenio_circulation.api as api
@@ -140,6 +177,10 @@ def create_circulation_entities(rid):
 
 
 def generate(app=None):
+    """Generate indices, test records and test entities.
+
+    :param app: [A/The current] Flask application.
+    """
     create_indices(app)
     rec_uuids = create_records()
 
@@ -149,6 +190,10 @@ def generate(app=None):
 
 
 def grant_access_rights(user):
+    """Grant invenio-circulation admin rights the provided user.
+
+    :param user: A invenio-accounts.models.User
+    """
     from invenio_db import db
     from invenio_access.models import ActionUsers
     from invenio_circulation.acl import circulation_admin_action

@@ -17,6 +17,8 @@
 # along with Invenio; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+"""invenio-circulation lists interface."""
+
 import json
 
 from flask import Blueprint, render_template
@@ -32,6 +34,7 @@ blueprint = Blueprint('lists', __name__, url_prefix='/circulation',
 @blueprint.route('/lists')
 @cap.require(403)
 def lists_overview():
+    """User interface showing all involved lists."""
     from invenio_circulation.signals import (
             lists_overview as _lists_overview)
 
@@ -77,7 +80,6 @@ def _multiple_lists(list_links):
             item['item'] = tmp
             items.append(item)
 
-
     modals = [('acquisition_vendor_price', 'Enter Vendor ID and price',
                [('vendor_id', 'Vendor ID'), ('price', 'Price')])]
     return render_template('lists/multiple_lists.html',
@@ -89,6 +91,7 @@ def _multiple_lists(list_links):
 @blueprint.route('/lists/<list_link>')
 @cap.require(403)
 def list_entrance(list_link):
+    """User interface showing the first stage UI of the specified list."""
     if ',' in list_link:
         return _multiple_lists(list_link.split(','))
     from invenio_circulation.signals import lists_class
@@ -101,6 +104,7 @@ def list_entrance(list_link):
 @blueprint.route('/lists/<list_link>/detail/<query>')
 @cap.require(403)
 def list_detail(list_link, query=None):
+    """User interface showing the second stage UI of the specified list."""
     from invenio_circulation.signals import lists_class
 
     clazz = send_signal(lists_class, list_link, None)[0]

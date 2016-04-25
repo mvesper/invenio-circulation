@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+#
 # This file is part of Invenio.
-# Copyright (C) 2009, 2010, 2011, 2014 CERN.
+# Copyright (C) 2015 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,10 +17,10 @@
 # along with Invenio; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""Invenio LDAP interface for BibCirculation at CERN. """
+"""Invenio LDAP interface for BibCirculation at CERN."""
 
-from time import sleep
 from thread import get_ident
+from time import sleep
 
 CFG_CERN_SITE = 1
 try:
@@ -40,7 +42,9 @@ def _cern_ldap_login():
 
 def get_user_info(nickname="", email="", ccid=""):
     """Query the CERN LDAP server for information about a user.
-    Return a dictionary of information"""
+
+    :return: A dictionary with user information.
+    """
     try:
         connection = _ldap_connection_pool[get_ident()]
     except KeyError:

@@ -17,72 +17,102 @@
 # along with Invenio; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""
-invenio-circulation database models.
-"""
-
-from invenio_db import db
+"""invenio-circulation database models."""
 
 import datetime
-import jsonpickle
-import json
 import importlib
-import elasticsearch
+import json
 
+import elasticsearch
+import jsonpickle
+
+from invenio_db import db
 from sqlalchemy.orm import subqueryload_all
 
 
 class CirculationPickleHandler(jsonpickle.handlers.BaseHandler):
+    """Helper class to pickle CirculationObject objects.
+
+    deprecated
+    """
+
     def _get_class(self, string):
         module_name, class_name = string.rsplit('.', 1)
         module = importlib.import_module(module_name)
         return module.__getattribute__(class_name)
 
     def flatten(self, obj, data):
+        """Flatten a CirculationObject to a json-friendly form.
+
+        :param obj: The CirculationObject to pickle.
+        :param data: Provided to store the json form.
+        """
         data['id'] = obj.id
         return data
 
     def restore(self, obj):
+        """Restore the json-friendly obj to a CirculationObject."""
         cls = self._get_class(obj['py/object'])
         return cls.get(obj['id'])
 
 
 class ArrayType(db.TypeDecorator):
+    """SQLAlchemy type decorator to store an array in the database."""
+
     impl = db.String
 
     def process_bind_param(self, value, dialect):
+        """Translate the given array to something storable."""
         return json.dumps(value)
 
     def process_result_value(self, value, dialect):
+        """Translate the stored value to an array."""
         if value == 'null':
             return []
         return json.loads(value)
 
     def copy(self):
+        """Produce a copy of ArrayType."""
         return ArrayType(self.impl.length)
 
 
 class CirculationObject(object):
+    """Base class of invenio-circulation entities.
+
+    Provides general database and elasticsearch functionality.
+    """
+
     _es = elasticsearch.Elasticsearch()
 
     def __str__(self):
+        """Get the string representation for the given object."""
         try:
             return "{0}('{1}')".format(self.__class__.__name__, self.id)
         except AttributeError:
             return "{0}()".format(self.__class__.__name__)
 
     def __repr__(self):
+        """Get the string representation for the given object."""
         try:
             return "{0}('{1}')".format(self.__class__.__name__, self.id)
         except AttributeError:
             return "{0}()".format(self.__class__.__name__)
 
     def __init__(self, **kwargs):
+        """Constructor.
+
+        Stores all given Key-Value arguments;
+        """
         for key, value in kwargs.items():
             self.__setattr__(key, value)
 
     @classmethod
     def new(cls, **kwargs):
+        """Store and index a new CirculationObject.
+
+        :param kwargs: Key-Value arguments will be set and stored/indexed.
+        :return: The created object.
+        """
         kwargs['creation_date'] = datetime.datetime.now()
         kwargs['modification_date'] = datetime.datetime.now()
         obj = cls(**kwargs)
@@ -96,10 +126,12 @@ class CirculationObject(object):
 
     @classmethod
     def get_all(cls):
+        """Get all stored objects of the given class."""
         return [cls.get(x.id) for x in cls.query.all()]
 
     @classmethod
     def get(cls, id):
+        """Get the CirculationObject associated with the given id."""
         obj = cls.query.options(subqueryload_all('*')).get(id)
         if obj is None:
             msg = "A {0} object with id {1} doesn't exist"
@@ -131,10 +163,12 @@ class CirculationObject(object):
 
     @classmethod
     def delete_all(cls):
+        """Delete all stored objects of the given class."""
         for x in cls.query.all():
             cls.get(x.id).delete()
 
     def delete(self):
+        """Delete the object."""
         try:
             db.session.delete(self)
             self._es.delete(index=self.__tablename__,
@@ -142,11 +176,13 @@ class CirculationObject(object):
                             id=self.id,
                             refresh=True)
             db.session.commit()
-        except Exception:
+        except Exception as e:
+            print e
             db.session.rollback()
 
     @classmethod
     def search(cls, query):
+        """Search for objects using the invenio query syntax."""
         from invenio_search.api import Query
 
         # TODO: That seems slightly wrong xD
@@ -172,6 +208,7 @@ class CirculationObject(object):
         return [cls.get(x['_id']) for x in res['hits']['hits']]
 
     def save(self):
+        """Store and index the object."""
         try:
             """Save object to persistent storage."""
             # Dirty shit :(
@@ -253,6 +290,7 @@ class CirculationObject(object):
             return value
 
     def jsonify(self):
+        """Get a dictionary representation of the object."""
         def _jsonify(value):
             if isinstance(value, dict):
                 res = {}
@@ -279,6 +317,7 @@ class CirculationObject(object):
         return res
 
     def pickle(self):
+        """Pickle the object."""
         return jsonpickle.encode(self)
 
 
@@ -297,6 +336,8 @@ def _get_authors(rec):
 
 
 class CirculationRecord(CirculationObject):
+    """invenio-circulation wrapper for invenio-records Records."""
+
     _json_schema = {'type': 'object',
                     'title': 'Record',
                     'properties': {
@@ -323,14 +364,17 @@ class CirculationRecord(CirculationObject):
 
     @classmethod
     def new(cls, **kwargs):
+        """Currently not supposed to create new Records."""
         raise Exception('CirculationRecord is a Wrapper class for Record.')
 
     @classmethod
     def get_all(cls):
+        """Get all CirculationRecords."""
         return cls.search('')
 
     @classmethod
     def get(cls, id):
+        """Get a invenio-records Record wrapped as CirculationRecord."""
         from invenio_records.api import Record
         from invenio_pidstore.models import PersistentIdentifier
 
@@ -353,13 +397,16 @@ class CirculationRecord(CirculationObject):
 
     @classmethod
     def delete_all(cls):
+        """Currently not supposed to delete Records."""
         raise Exception('CirculationRecord is a Wrapper class for Record.')
 
     def delete(self):
+        """Currently not supposed to delete Records."""
         raise Exception('CirculationRecord is a Wrapper class for Record.')
 
     @classmethod
     def search(cls, query):
+        """Search for objects using the invenio query syntax."""
         from flask import current_app as app
         from invenio_search import Query, current_search_client
 
@@ -372,10 +419,13 @@ class CirculationRecord(CirculationObject):
                 if x['_score'] > 0.3]
 
     def save(self):
+        """Currently not supposed to save Records."""
         raise Exception('CirculationRecord is a Wrapper class for Record.')
 
 
 class CirculationItem(CirculationObject, db.Model):
+    """Data model to store bibliographic item information."""
+
     __tablename__ = 'circulation_item'
     id = db.Column(db.BigInteger, primary_key=True, nullable=False)
     record_id = db.Column(db.String(255))
@@ -471,7 +521,7 @@ class CirculationItem(CirculationObject, db.Model):
         }
 
     @db.reconstructor
-    def init_on_load(self):
+    def _init_on_load(self):
         # TODO: Don't know if there is a better way than None
         try:
             self.record = CirculationRecord.get(self.record_id)
@@ -480,6 +530,16 @@ class CirculationItem(CirculationObject, db.Model):
 
 
 class CirculationLoanCycle(CirculationObject, db.Model):
+    """Data model to store loan information.
+
+    Information associated with the loan cycle is stored in an object of this
+    class.
+    The assigned information include:
+    * The corresponding user.
+    * The corresponding item.
+    * The desired and actual start and end date.
+    """
+
     __tablename__ = 'circulation_loan_cycle'
     id = db.Column(db.BigInteger, primary_key=True, nullable=False)
     current_status = db.Column(db.String(255))
@@ -520,7 +580,9 @@ class CirculationLoanCycle(CirculationObject, db.Model):
     EVENT_REQUEST_LOAN_EXTENSION = 'clc_request_loan_extension'
     EVENT_LOAN_EXTENSION = 'clc_loan_extension'
 
-    DELIVERY_DEFAULT = 'Pick up'
+    DELIVERY_DEFAULT = 'pick_up'
+    DELIVERY_PICK_UP = 'pick_up'
+    DELIVERY_INTERNAL_MAIL = 'internal_mail'
 
     _json_schema = {'type': 'object',
                     'title': 'Loan Cycle',
@@ -558,6 +620,8 @@ class CirculationLoanCycle(CirculationObject, db.Model):
 
 
 class CirculationUser(CirculationObject, db.Model):
+    """Data model to store user information for invenio-circulation."""
+
     __tablename__ = 'circulation_user'
     id = db.Column(db.BigInteger, primary_key=True, nullable=False)
     invenio_user_id = db.Column(db.BigInteger)
@@ -644,6 +708,11 @@ class CirculationUser(CirculationObject, db.Model):
 
 
 class CirculationLocation(CirculationObject, db.Model):
+    """Data model to store information regarding utilized locations.
+
+    In the context of a library, this class stores information of those.
+    """
+
     __tablename__ = 'circulation_location'
     id = db.Column(db.BigInteger, primary_key=True, nullable=False)
     code = db.Column(db.String(255))
@@ -699,6 +768,8 @@ class CirculationLocation(CirculationObject, db.Model):
 
 
 class CirculationMailTemplate(CirculationObject, db.Model):
+    """Data model to store E-mail templates."""
+
     __tablename__ = 'circulation_mail_template'
     id = db.Column(db.BigInteger, primary_key=True, nullable=False)
     template_name = db.Column(db.String(255))
@@ -748,6 +819,8 @@ class CirculationMailTemplate(CirculationObject, db.Model):
 
 
 class CirculationLoanRule(CirculationObject, db.Model):
+    """Data model to store loan rules definitions."""
+
     __tablename__ = 'circulation_loan_rule'
     id = db.Column(db.BigInteger, primary_key=True, nullable=False)
     name = db.Column(db.String(255))
@@ -813,6 +886,8 @@ class CirculationLoanRule(CirculationObject, db.Model):
 
 
 class CirculationLoanRuleMatch(CirculationObject, db.Model):
+    """Data model to store application conditions for CirculationLoanRules."""
+
     __tablename__ = 'circulation_loan_rule_match'
     id = db.Column(db.BigInteger, primary_key=True, nullable=False)
     loan_rule_id = db.Column(db.BigInteger,
@@ -870,6 +945,13 @@ class CirculationLoanRuleMatch(CirculationObject, db.Model):
 
 
 class CirculationEvent(CirculationObject, db.Model):
+    """Data model to store events associated with invenio-circulation.
+
+    Certain important actions will be stored as CirculationEvents. This class
+    therefore carries information about the involved objects and the kind of
+    event.
+    """
+
     __tablename__ = 'circulation_event'
     id = db.Column(db.BigInteger, primary_key=True, nullable=False)
     user_id = db.Column(db.BigInteger, db.ForeignKey('circulation_user.id',

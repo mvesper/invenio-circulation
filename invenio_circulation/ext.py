@@ -22,23 +22,22 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Circulation Module"""
+"""Invenio Circulation module."""
 
 from __future__ import absolute_import, print_function
 
 from flask_babelex import gettext as _
 
-from .views.circulation import blueprint as circ_blueprint
-from .views.entity import blueprint as entity_blueprint
-from .views.user import blueprint as user_blueprint
-from .views.lists import blueprint as lists_blueprint
-
 from .receivers.circulation import *
 from .receivers.entity import *
-from .receivers.user import *
-from .receivers.record_action import *
 from .receivers.lists import *
+from .receivers.record_action import *
+from .receivers.user import *
 from .receivers.utils import *
+from .views.circulation import blueprint as circ_blueprint
+from .views.entity import blueprint as entity_blueprint
+from .views.lists import blueprint as lists_blueprint
+from .views.user import blueprint as user_blueprint
 
 
 class InvenioCirculation(object):

@@ -17,6 +17,8 @@
 # along with Invenio; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+"""invenio-circulation entity interface."""
+
 import json
 
 from flask import Blueprint, render_template, flash
@@ -33,6 +35,7 @@ blueprint = Blueprint('entity', __name__, url_prefix='/circulation',
 @blueprint.route('/entities')
 @cap.require(403)
 def entities_overview():
+    """User interface showing all involved entities."""
     from invenio_circulation.signals import entities_overview
 
     entities = flatten(send_signal(entities_overview,
@@ -45,6 +48,7 @@ def entities_overview():
 @blueprint.route('/entities/<entity>')
 @cap.require(403)
 def entities_hub(entity):
+    """User interface providing the search for the given entity."""
     return render_template('entities/entity_hub.html',
                            active_nav='entities', entity=entity)
 
@@ -53,6 +57,7 @@ def entities_hub(entity):
 @blueprint.route('/entities/action/search/<entity>/<search>')
 @cap.require(403)
 def entity_hub_search(entity, search=''):
+    """User interface showing the search result for the given entity."""
     from invenio_circulation.signals import entities_hub_search
 
     entities, template = send_signal(entities_hub_search, entity, search)[0]
@@ -65,6 +70,7 @@ def entity_hub_search(entity, search=''):
 @blueprint.route('/entities/<entity>/<id>')
 @cap.require(403)
 def entity(entity, id):
+    """User interface showing the specified entity and additional info."""
     from invenio_circulation.signals import (
             entity as _entity,
             entity_suggestions as _entity_suggestions,
@@ -91,6 +97,7 @@ def entity(entity, id):
 @blueprint.route('/entities/action/create/<entity>')
 @cap.require(403)
 def entity_new(entity):
+    """User interface to create a new entity."""
     from invenio_circulation.signals import (
             entity_class,
             entity_suggestions as _entity_suggestions)
@@ -119,6 +126,7 @@ def entity_new(entity):
 @cap.require(403)
 @extract_params
 def api_entity_search(entity, search):
+    """API to search for objects of the given entity."""
     from invenio_circulation.signals import entity_class
 
     clazz = send_signal(entity_class, entity, None)[0]
@@ -130,6 +138,7 @@ def api_entity_search(entity, search):
 @cap.require(403)
 @extract_params
 def api_entity_search_autocomplete(entity, search):
+    """API to search (simplified) for objects of the given entity."""
     from invenio_circulation.signals import entity_autocomplete_search
 
     q = {'query': {'bool': {'should': {'match': {'content_ngram': search}}}}}
@@ -142,6 +151,7 @@ def api_entity_search_autocomplete(entity, search):
 @cap.require(403)
 @extract_params
 def api_entity_create(entity, data):
+    """API to create an object of the given entity."""
     from invenio_circulation.signals import entity_name, circ_apis
 
     name = send_signal(entity_name, entity, None)[0]
@@ -158,6 +168,7 @@ def api_entity_create(entity, data):
 @cap.require(403)
 @extract_params
 def api_entity_update(id, entity, data):
+    """API to update an object of the given entity."""
     from invenio_circulation.signals import (
             entity_class, entity_name, circ_apis)
 
@@ -175,6 +186,7 @@ def api_entity_update(id, entity, data):
 @cap.require(403)
 @extract_params
 def api_entity_delete(id, entity):
+    """API to delete the specified object."""
     from invenio_circulation.signals import (
             entity_class, entity_name, circ_apis)
 

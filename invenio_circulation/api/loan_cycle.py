@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of Invenio.
+# Copyright (C) 2015, 2016 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+"""invenio-circulation api responsible for CirculationLoanCycle handling."""
+
 import datetime
 import invenio_circulation.models as models
 
@@ -15,7 +36,11 @@ from invenio_circulation.api.event import create as create_event
 def create(item_id, user_id, current_status, start_date, end_date,
            desired_start_date, desired_end_date, issued_date, delivery,
            group_uuid=None):
+    """Create a CirculationLoanCycle object.
 
+    :raise: ValidationExceptions
+    :return: The newly created object.
+    """
     clc = models.CirculationLoanCycle.new(
             item_id=item_id, user_id=user_id,
             current_status=current_status,
@@ -33,6 +58,7 @@ def create(item_id, user_id, current_status, start_date, end_date,
 
 
 def update(clc, **kwargs):
+    """Update a CirculationLoanCycle object."""
     current_items, changed = _update(clc, **kwargs)
     if changed:
         changes_str = ['{0}: {1} -> {2}'.format(key,
@@ -46,12 +72,20 @@ def update(clc, **kwargs):
 
 
 def delete(clc):
+    """Delete a CirculationLoanCycle object."""
     create_event(loan_cycle_id=clc.id,
                  event=models.CirculationLoanCycle.EVENT_DELETE)
     clc.delete()
 
 
 def try_cancel_clcs(clcs):
+    """Check the conditions to cancel the loan cycles.
+
+    Checked conditions:
+    * The current_status must be 'on_shelf' or 'requested'.
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
 
     try:
@@ -68,6 +102,12 @@ def try_cancel_clcs(clcs):
 
 
 def cancel_clcs(clcs, reason=''):
+    """Cancelt the given loan cycles.
+
+    The items current_status will be set to 'on_shelf'.
+    This also calls api.loan_cycle.update_waitlist.
+    :raise: ValidationExceptions
+    """
     try:
         try_cancel_clcs(clcs)
     except ValidationExceptions as e:
@@ -123,6 +163,12 @@ def _get_affected_clcs(handled_clc, involved_clcs):
 
 
 def update_waitlist(clc):
+    """Update a virtual waitlist for a given loan cycle.
+
+    This function will check all loan cycles occurring in the same period of
+    time and update their start_date and end_date attributes if they differ
+    from their desired_start_date and desired_end_date values if possible.
+    """
     query = 'item_id:{0}'.format(clc.item.id)
     other_clcs = models.CirculationLoanCycle.search(query)
     involved_clcs = _get_involved_clcs(clc, other_clcs)
@@ -155,6 +201,15 @@ def update_waitlist(clc):
 
 
 def try_overdue_clcs(clcs):
+    """Check the conditions to overdue the loan cycles.
+
+    Checked conditions:
+    * The current_status must be 'on_loan'.
+    * The additional_statuses don't include 'overdue'.
+    * The end_date attribute lays in the past.
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
 
     try:
@@ -191,6 +246,11 @@ def try_overdue_clcs(clcs):
 
 
 def overdue_clcs(clcs):
+    """Overdue the given loan cycles.
+
+    'overdue' will be added to the attribute additional_statuses.
+    :raise: ValidationExceptions
+    """
     try:
         try_overdue_clcs(clcs)
     except ValidationExceptions as e:
@@ -210,6 +270,17 @@ def _extension_allowed(user, items):
 
 
 def try_loan_extension(clcs, requested_end_date):
+    """Check the conditions to extend the loan duration of the loan cycles.
+
+    Checked conditions:
+    * The current_status must be 'on_shelf'
+    * The loan cycles must currently be associated with one user.
+    * The user and the items are allowed to be extended.
+    * The extended loan duration is valid.
+    * The requested_end_date doesn't interfere with other loans/requests.
+
+    :raise: ValidationExceptions
+    """
     start_date = datetime.date.today()
     users = set(clc.user for clc in clcs)
     items = [clc.item for clc in clcs]
@@ -251,6 +322,11 @@ def try_loan_extension(clcs, requested_end_date):
 
 
 def loan_extension(clcs, requested_end_date):
+    """Extend the given loan cycles.
+
+    'overdue' will be removed from the attribute additional_statuses.
+    :raise: ValidationExceptions
+    """
     new_end_date = requested_end_date
     try:
         try_loan_extension(clcs, requested_end_date)
@@ -271,6 +347,14 @@ def loan_extension(clcs, requested_end_date):
 
 
 def try_transform_into_loan(clcs):
+    """Check the conditions to transform the requests into loans.
+
+    Checked conditions:
+    * The current_status must be 'requested'.
+    * The start_date must today or earlier.
+
+    :raise: ValidationExceptions
+    """
     exceptions = []
 
     try:
@@ -299,6 +383,11 @@ def try_transform_into_loan(clcs):
 
 
 def transform_into_loan(clcs):
+    """Transform the given requests into loans.
+
+    The items current_status will be set to 'on_loan'.
+    :raise: ValidationExceptions
+    """
     try:
         try_transform_into_loan(clcs)
     except ValidationExceptions as e:

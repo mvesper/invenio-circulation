@@ -21,9 +21,8 @@
 
 from __future__ import unicode_literals
 
-from invenio_theme.bundles import js as _js
-
 from invenio_assets import NpmBundle, RequireJSFilter
+from invenio_theme.bundles import js as _js
 
 
 js_circulation = NpmBundle(
