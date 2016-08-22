@@ -34,6 +34,38 @@
 {%- endblock javascript %}
 
 {%- block page_body %}
-Hello, World!
+{% raw %}
+<div ng-app="circulation">
+  <div ng-controller="CirculationController as circulation">
+    <input type="text" user-search>
+    <input type="text" circulation-search>   
+
+    <div ng-repeat="user in circulation.users">
+        User: {{user.email}} | <button ng-click="circulation.removeUser($index)">Remove</button>
+    </div>
+
+    <div ng-repeat="item in circulation.items">
+        Item: {{item.id}} | <span circulation-admin-item index="$index"></span> | <button ng-click="circulation.removeItem($index)">Remove</button>
+    </div>
+
+    </br>
+    Can Loan: {{circulation.actionStatus.loan}}<button ng-click="circulation.loanItems()">Loan</button>
+    Can request: {{circulation.actionStatus.request}}<button ng-click="circulation.requestItems()">Request</button>
+    Can return: {{circulation.actionStatus.ret}}<button ng-click="circulation.returnItems()">Return</button>
+
+    </br>
+    Start Date:<input type="text" ng-model="circulation.settings.startDate">   
+    End Date:<input type="text" ng-model="circulation.settings.endDate">   
+    Delivery:
+    <select ng-model="circulation.settings.selectedDelivery">
+      <option value="{{circulation.settings.delivery[0]}}">{{circulation.settings.delivery[0]}}</option>
+      <option value="{{circulation.settings.delivery[1]}}">{{circulation.settings.delivery[1]}}</option>
+    </select>
+
+    </br>
+
+  </div>
+</div>
+{% endraw %}
 {%- endblock %}
 

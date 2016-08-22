@@ -35,7 +35,16 @@ css = Bundle(
 
 js = NpmBundle(
     'node_modules/angular/angular.js',
-    'js/circulation/app.js',
+    'js/circulation/circulation.module.js',
+    'js/circulation/circulation.controller.js',
+    'js/circulation/circulationSearch.factory.js',
+    'js/circulation/ItemStore.factory.js',
+    'js/circulation/SettingsStore.factory.js',
+    'js/circulation/circulationSearch.directive.js',
+    'js/circulation/circulationAdminItem.directive.js',
+    'js/circulation/userSearch.directive.js',
+    'js/circulation/userSearch.factory.js',
+    'js/circulation/UserStore.factory.js',
     filters='jsmin',
     output='gen/circulation.%(version)s.js',
     npm={

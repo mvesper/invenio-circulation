@@ -22,8 +22,26 @@
  */
 
 (function (angular) {
-  // Bootstrap it!
-  angular.element(document).ready(function() {
-      alert('Hello, World!');
-  });
+  angular
+    .module('circulation')
+    .factory('CirculationSearch', CirculationSearch)
+
+  CirculationSearch.$inject = ['$http'];
+
+  function CirculationSearch($http) {
+    result = [];
+    var service = {
+      search: search,
+      result: result,
+    };
+
+    return service;
+
+    function search(searchString, callback) {
+      $http({
+        method: 'GET',
+        url: '/circulation/items/?q=' + encodeURIComponent(searchString)
+      }).then(callback);
+    }
+  }
 })(angular);
