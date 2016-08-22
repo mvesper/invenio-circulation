@@ -19,11 +19,9 @@
 
 """Invenio-Circulation REST interface."""
 
-from flask import Blueprint, abort
-from invenio_records_rest.utils import obj_or_import_string
+from flask import Blueprint
 from invenio_records_rest.views import \
     create_url_rules as records_rest_url_rules
-from invenio_rest import ContentNegotiatedMethodView
 
 
 def create_blueprint(endpoints):

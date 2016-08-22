@@ -53,3 +53,13 @@ CIRCULATION_REST_ENDPOINTS = {
     }
 }
 """Basic REST circulation configuration."""
+
+CIRCULATION_ITEM_SEARCH_API = '/circulation/items/'
+"""Configure the item search engine endpoint."""
+
+CIRCULATION_USER_SEARCH_API = '/users/'
+"""Configure the user search engine endpoint."""
+
+CIRCULATION_ACTION_LOAN_URL = '/hooks/receivers/circulation_loan/events/'
+CIRCULATION_ACTION_REQUEST_URL = '/hooks/receivers/circulation_request/events/'
+CIRCULATION_ACTION_RETURN_URL = '/hooks/receivers/circulation_return/events/'

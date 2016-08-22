@@ -19,7 +19,7 @@
 
 """Invenio-Circulation interface."""
 
-from flask import Blueprint, render_template
+from flask import Blueprint, current_app, render_template
 
 blueprint = Blueprint(
     'circulation',
@@ -33,4 +33,5 @@ blueprint = Blueprint(
 @blueprint.route('/', methods=['GET'])
 def index():
     """Circulation index page."""
-    return render_template('invenio_circulation/index.html')
+    return render_template('invenio_circulation/index.html',
+                           config=current_app.config)

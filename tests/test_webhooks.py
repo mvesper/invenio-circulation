@@ -167,10 +167,10 @@ def test_lose_return_missing_receiver(app, db, access_token):
 
 def test_extend_receiver(app, db, access_token):
     """Use the webhooks api to an item loan."""
-    item_uuid = uuid.uuid4()
-    item_data = {}
-    pid = circulation_item_minter(item_uuid, item_data)
-    item = Item.create(item_data, id_=item_uuid)
+    item = Item.create({})
+    pid = circulation_item_minter(item.id, item)
+    item.commit()
+    db.session.commit()
     with app.test_request_context():
         with app.test_client() as client:
             url = url_for('invenio_webhooks.event_list',

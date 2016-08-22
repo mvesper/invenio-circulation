@@ -149,7 +149,7 @@ class HoldingSchema(Schema):
         # desired dates of the requested holding are not available
         try:
             intersection = holding_interval & self.context['request_interval']
-            raise ValidationError(intersection)
+            raise ValidationError(str(intersection))
         except IllegalArgument:
             pass
 

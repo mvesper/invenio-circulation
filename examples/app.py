@@ -42,11 +42,13 @@ from flask_babelex import Babel
 from flask_breadcrumbs import Breadcrumbs
 from flask_menu import Menu
 from invenio_accounts import InvenioAccounts
+from invenio_accounts.views import blueprint as accounts_blueprint
+from invenio_accounts_rest import InvenioAccountsREST
 from invenio_assets import InvenioAssets
 from invenio_db import InvenioDB
 from invenio_indexer import InvenioIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
-from invenio_oauth2server import InvenioOAuth2Server
+from invenio_oauth2server import InvenioOAuth2Server, InvenioOAuth2ServerREST
 from invenio_oauth2server.views import server_blueprint, settings_blueprint
 from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
@@ -70,12 +72,14 @@ app.config.update(
     OAUTH2SERVER_CLIENT_SECRET_SALT_LEN=60,
     OAUTH2SERVER_TOKEN_PERSONAL_SALT_LEN=60,
     SECRET_KEY='changeme',
+    ASSETS_DEBUG=True,
 )
 
 Babel(app)
 Menu(app)
 Breadcrumbs(app)
 InvenioAccounts(app)
+InvenioAccountsREST(app)
 InvenioAssets(app)
 InvenioDB(app)
 InvenioSearch(app)
@@ -86,9 +90,11 @@ InvenioRecords(app)
 InvenioRecordsREST(app)
 InvenioWebhooks(app)
 InvenioOAuth2Server(app)
+InvenioOAuth2ServerREST(app)
 InvenioCirculation(app)
 InvenioCirculationREST(app)
 
+app.register_blueprint(accounts_blueprint)
 app.register_blueprint(server_blueprint)
 app.register_blueprint(settings_blueprint)
 app.register_blueprint(webhooks_blueprint)

@@ -22,8 +22,26 @@
  */
 
 (function (angular) {
-  // Bootstrap it!
-  angular.element(document).ready(function() {
-      alert('Hello, World!');
-  });
+  angular
+    .module('circulation')
+    .directive('circulationAdminItem', circulationAdminItem)
+
+  circulationAdminItem.$inject = ['$http', 'ItemStore', 'Config'];
+
+  function circulationAdminItem($http, ItemStore, Config) {
+    var directive = {
+      link: link,
+      scope: {
+        index: '=',
+      },
+      template: '{{results.loan}} {{results.request}} {{results.return}}',
+    };
+
+    return directive;
+
+    function link(scope, element, attributes) {
+      scope.results = ItemStore.itemActions[scope.index];
+      ItemStore.validateActionsOnItem(scope.index, Config.config.actions);
+    }
+  }
 })(angular);
