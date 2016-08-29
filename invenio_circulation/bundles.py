@@ -37,6 +37,7 @@ js = NpmBundle(
     'node_modules/angular/angular.js',
     'js/circulation/circulation.module.js',
     'js/circulation/circulation.controller.js',
+    'js/circulation/UserHub.controller.js',
     'js/circulation/circulationSearch.factory.js',
     'js/circulation/ItemStore.factory.js',
     'js/circulation/SettingsStore.factory.js',
@@ -45,6 +46,9 @@ js = NpmBundle(
     'js/circulation/userSearch.directive.js',
     'js/circulation/userSearch.factory.js',
     'js/circulation/UserStore.factory.js',
+    'js/circulation/HoldStore.factory.js',
+    'js/circulation/userCurrentLoan.directive.js',
+    'js/circulation/userCurrentRequest.directive.js',
     filters='jsmin',
     output='gen/circulation.%(version)s.js',
     npm={

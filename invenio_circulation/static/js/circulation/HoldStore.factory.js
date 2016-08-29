@@ -2,12 +2,12 @@
  * This file is part of invenio.
  * Copyright (C) 2016 CERN.
  *
- * invenio is free software; you can redistribute it and/or
+ * invenio is free software; you can recategorize it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
  * License, or (at your option) any later version.
  *
- * invenio is distributed in the hope that it will be useful, but
+ * invenio is categorized in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
@@ -24,31 +24,56 @@
 (function (angular) {
   angular
     .module('circulation')
-    .factory('ItemStore', ItemStore)
+    .factory('HoldStore', HoldStore)
 
-  ItemStore.$inject = ['$http', 'SettingsStore']
+  HoldStore.$inject = ['$http', 'SettingsStore']
 
-  function ItemStore($http, SettingsStore) {
-    items = [];
-    itemActions = [];
+  function HoldStore($http, SettingsStore) {
+    var holds= [];
+    var holdActions = [];
+    var userId = '';
 
     var service = {
-      items: items,
-      itemActions: itemActions,
-      validateActionsOnItem: validateActionsOnItem,
-      validateItems: validateItems,
-      performActionOnItem: performActionOnItem,
-      extend: extend,
+      holds: holds,
+      holdActions: holdActions,
+      categorizeItems: categorizeItems,
+      validateActionsOnHold: validateActionsOnHold,
+      validateHolds: validateHolds,
+      performActionOnHold: performActionOnHold,
       remove: remove,
-      getItemsActionState: getItemsActionState,
     };
 
     return service;
 
-    function validateActionsOnItem(index, actions) {
+    function categorizeItems(userId, items) {
+
+      userId = userId;
+      var today = new Date();
+
+      items.forEach(function(item, index) {
+        item.metadata._circulation.holdings.forEach(function(hold) {
+          if (hold.user_id == userId) {
+            hold._itemId = item.id;
+            hold._itemIndex = index;
+            var startDate = new Date(hold.start_date);
+            if (startDate <= today) {
+              hold._loan = true;
+            } else {
+              hold._loan = false;
+            }
+            holds.push(hold);
+            holdActions.push({});
+          }
+        });
+      });
+
+    }
+
+    function validateActionsOnHold(index, actions) {
       actions.forEach(function(val) {
         var data = SettingsStore.getPayload();
-        data.item_id = items[index].id;
+        data.hold_id = holds[index].id;
+        data.item_id = holds[index]._itemId;
         data.dry_run = true;
         
         $http({
@@ -59,22 +84,23 @@
           },
           data: data,
         }).then(function (response) {
-          itemActions[index][val[0]] = 1;
+          holdActions[index][val[0]] = 1;
         }, function (response) {
-          itemActions[index][val[0]] = -1;
+          holdActions[index][val[0]] = -1;
         });
        })
     }
 
-    function validateItems(actions) {
-      for (var i=0; i < items.length; i++) {
-        validateActionsOnItem(i, actions);
+    function validateHolds(actions) {
+      for (var i=0; i < holds.length; i++) {
+        validateActionsOnHold(i, actions);
       }
     }
 
-    function performActionOnItem(index, action) {
+    function performActionOnHold(index, action) {
       var data = SettingsStore.getPayload();
-      data.item_id = items[index].id;
+      data.hold_id = holds[index].id;
+      data.item_id = holds[index]._itemId;
       
       $http({
         method: 'POST',
@@ -91,32 +117,9 @@
 
     }
 
-    function getItemsActionState(action) {
-      if (itemActions.length == 0) {
-        return 0;
-      }
-
-      var actionState = 1;
-
-      itemActions.forEach(function(val) {
-        if (val[action] == -1) {
-          actionState = -1;
-        }
-      });
-
-      return actionState
-    }
-
-    function extend(values) {
-      values.forEach(function(val) {
-        items.push(val);
-        itemActions.push({});
-      });
-    }
-
     function remove(index) {
-      items.splice(index, 1);
-      itemActions.splice(index, 1);
+      holds.splice(index, 1);
+      holdActions.splice(index, 1);
     }
 
   }

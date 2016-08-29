@@ -20,6 +20,7 @@
 """Invenio-Circulation interface."""
 
 from flask import Blueprint, render_template
+from flask_login import current_user
 
 blueprint = Blueprint(
     'circulation',
@@ -34,3 +35,12 @@ blueprint = Blueprint(
 def index():
     """Circulation index page."""
     return render_template('invenio_circulation/index.html')
+
+
+@blueprint.route('/userhub', methods=['GET'])
+def user_hub():
+    """Circulation user hub."""
+    if not current_user:
+        return render_template('invenio_circulation/no_user.html')
+
+    return render_template('invenio_circulation/user_hub.html')

@@ -26,6 +26,7 @@
 """Circulation webhooks."""
 
 from invenio_db import db
+from invenio_indexer.api import RecordIndexer
 from invenio_pidstore.resolver import Resolver
 from invenio_webhooks.models import Receiver
 
@@ -50,7 +51,6 @@ class ReceiverBase(Receiver):
                             getter=Item.get_record)
         _, item = resolver.resolve(event.payload['item_id'])
 
-        # item = Item.get_record(event.payload['item_id'])
         self.circulation_event_schema.context['item'] = item
 
         data, errors = self.circulation_event_schema.load(event.payload)
@@ -67,6 +67,9 @@ class ReceiverBase(Receiver):
             data, _ = self.circulation_event_schema.dump(data)
             self._run(item, data)
             item.commit()
+
+        record_indexer = RecordIndexer()
+        record_indexer.index(item)
 
 
 class LoanReceiver(ReceiverBase):

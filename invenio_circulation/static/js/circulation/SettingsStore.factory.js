@@ -33,6 +33,7 @@
       startDate: '',
       endDate: '',
       delivery: ['mail', 'pickup'],
+      requestedEndDate: '',
       selectedDelivery: 'mail',
       getActiveUserId: getActiveUserId,
     }
@@ -57,6 +58,7 @@
         'user_id': getActiveUserId(),
         'start_date': settings.startDate,
         'end_date': settings.endDate,
+        'requested_end_date': settings.requestedEndDate,
         'delivery': settings.selectedDelivery,
       }
 
