@@ -19,11 +19,19 @@
 
 """Invenio-Circulation REST interface."""
 
-from flask import Blueprint, abort
-from invenio_records_rest.utils import obj_or_import_string
+import json
+from flask import Blueprint, request
+from sqlalchemy import String, cast
+from invenio_accounts.models import User
+from invenio_oauth2server import require_api_auth, require_oauth_scopes
 from invenio_records_rest.views import \
     create_url_rules as records_rest_url_rules
 from invenio_rest import ContentNegotiatedMethodView
+
+
+def circulation_user_serializer(*args, **kwargs):
+    """Basic serializer for invenio_accounts.models.User data."""
+    return json.dumps([{'id': u.id, 'email': u.email} for u in args])
 
 
 def create_blueprint(endpoints):
@@ -40,4 +48,35 @@ def create_blueprint(endpoints):
         for rule in records_rest_url_rules(endpoint, **options):
             blueprint.add_url_rule(**rule)
 
+    circulation_resource = CirculationUserResource.as_view(
+        'circulation_user_resource',
+        serializers={'application/json': circulation_user_serializer},
+        default_media_type='application/json'
+    )
+
+    blueprint.add_url_rule(
+        '/circulation/users/',
+        view_func=circulation_resource,
+        methods=['GET'],
+    )
+
     return blueprint
+
+
+class CirculationUserResource(ContentNegotiatedMethodView):
+    """MethodView implementation."""
+
+    def __init__(self, serializers, default_media_type):
+        """Constructor."""
+        super(CirculationUserResource, self).__init__(
+            serializers, default_media_type=default_media_type)
+
+    @require_api_auth()
+    @require_oauth_scopes('webhooks:event')
+    def get(self):
+        """Get circulation/users/?q=."""
+        query = request.args.get('q')
+        return list(User.query.filter(
+            (User.email == query) |
+            (cast(User.id, String) == query)
+        ))
