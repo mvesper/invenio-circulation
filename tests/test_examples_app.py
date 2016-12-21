@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -83,3 +83,10 @@ def test_example_app(example_app):
         subprocess.check_output(cmd, shell=True).decode('utf-8')
     )
     assert len(output['hits']['hits']) > 0
+
+    # item revision search API
+    cmd = 'curl http://localhost:5000/api/circulation/item_revisions/'
+    output = json.loads(
+        subprocess.check_output(cmd, shell=True).decode('utf-8')
+    )
+    assert output and 'hits' in output and 'hits' in output['hits']

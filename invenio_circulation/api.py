@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -40,7 +40,7 @@ from sqlalchemy import BOOLEAN, DATE, INTEGER, cast, func, type_coerce
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy_continuum import version_class
 
-from invenio_circulation.models import ItemStatus
+from .models import ItemStatus
 
 
 def check_status(method=None, statuses=None):
