@@ -83,3 +83,10 @@ def test_example_app(example_app):
         subprocess.check_output(cmd, shell=True).decode('utf-8')
     )
     assert len(output['hits']['hits']) > 0
+
+    # item revision search API
+    cmd = 'curl http://localhost:5000/api/circulation/item_revisions/'
+    output = json.loads(
+        subprocess.check_output(cmd, shell=True).decode('utf-8')
+    )
+    assert output and 'hits' in output and 'hits' in output['hits']

@@ -51,6 +51,27 @@ CIRCULATION_REST_ENDPOINTS = {
         'item_route': '/circulation/items/<pid(crcitm):pid_value>',
         'default_media_type': 'application/json',
         'max_result_window': 10000,
+    },
+    'crcitmrev': {
+        'pid_type': 'crcitm',
+        'pid_minter': 'circulation_item',
+        'pid_fetcher': 'circulation_item',
+        'record_class': 'invenio_circulation.api:Item',
+        'record_serializers': {
+            'application/json': ('invenio_records_rest.serializers'
+                                 ':json_v1_response'),
+        },
+        'search_class': 'invenio_circulation.search:ItemRevisionSearch',
+        'search_index': None,
+        'search_type': None,
+        'search_serializers': {
+            'application/json': ('invenio_circulation.serializers'
+                                 ':revision_serializer'),
+        },
+        'list_route': '/circulation/item_revisions/',
+        'item_route': '/circulation/item_revisions/<pid(crcitm):pid_value>',
+        'default_media_type': 'application/json',
+        'max_result_window': 10000,
     }
 }
 """Basic REST circulation configuration."""

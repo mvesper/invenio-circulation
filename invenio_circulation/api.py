@@ -40,7 +40,7 @@ from sqlalchemy import BOOLEAN, DATE, INTEGER, cast, func, type_coerce
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy_continuum import version_class
 
-from invenio_circulation.models import ItemStatus
+from .models import ItemStatus
 
 
 def check_status(method=None, statuses=None):
