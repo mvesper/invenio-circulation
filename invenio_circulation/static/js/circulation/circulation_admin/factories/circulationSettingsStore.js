@@ -25,26 +25,40 @@
 (function (angular) {
   // Setup
   angular
-    .module('circulationSettings')
-    .directive('circulationSettings', circulationSettings);
+    .module('circulation')
+    .factory('circulationSettingsStore', circulationSettingsStore);
 
-  circulationSettings.$inject = ['circulationSettingsStore'];
-
-  function circulationSettings(circulationSettingsStore) {
-    var directive = {
-      link: link,
-      scope: true,
-      templateUrl: templateUrl,
+  function circulationSettingsStore() {
+    var settings = {
+      startDate: '',
+      endDate: '',
+      delivery: ['mail', 'pickup'],
+      selectedDelivery: 'mail',
+      waitlist: false,
     };
 
-    return directive;
+    var service = {
+      settings: settings,
+      getPayload: getPayload,
+    };
 
-    function link(scope, element, attributes) {
-      scope.settings = circulationSettingsStore.settings;
-    }
+    return service;
 
-    function templateUrl(element, attrs) {
-      return attrs.template;
+    function getPayload() {
+      var data = {
+        'start_date': settings.startDate,
+        'end_date': settings.endDate,
+        'delivery': settings.selectedDelivery,
+        'waitlist': settings.waitlist,
+      }
+
+      angular.forEach(data, function(value, key) {
+        if (value == '' || value == null) {
+          delete data[key];
+        }
+      });
+
+      return data;
     }
   }
 })(angular);

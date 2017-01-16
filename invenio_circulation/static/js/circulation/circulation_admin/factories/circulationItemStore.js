@@ -22,13 +22,19 @@
  */
 
 
-require([
-    'node_modules/angular/angular',
-    'js/circulation/circulationUserHub',
-  ], function() {
-    angular.element(document).ready(function() {
-      angular.bootstrap(
-        document.getElementById("invenio-circulation"), ['circulationUserHub']
-      );
-    });
-});
+(function (angular) {
+  // Setup
+  angular
+    .module('circulation')
+    .factory('circulationItemStore', circulationItemStore);
+
+  function circulationItemStore() {
+    var items = [];
+
+    var service = {
+      items: items,
+    };
+
+    return service;
+  }
+})(angular);

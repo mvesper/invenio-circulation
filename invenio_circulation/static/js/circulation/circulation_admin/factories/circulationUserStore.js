@@ -25,43 +25,16 @@
 (function (angular) {
   // Setup
   angular
-    .module('circulationUserSearch')
-    .directive('circulationUserSearch', circulationUserSearch);
+    .module('circulation')
+    .factory('circulationUserStore', circulationUserStore);
 
-  circulationUserSearch.$inject = ['$http', 'circulationUserStore']
+  function circulationUserStore() {
+    var user = {};
 
-  function circulationUserSearch($http, circulationUserStore) {
-    var directive = {
-      link: link,
-      scope: {
-        userSearchEndpoint: '=',
-      },
-      templateUrl: templateUrl,
+    var service = {
+      user: user,
     };
 
-    return directive;
-
-    function link(scope, element, attributes) {
-      scope.getUser = function(query) {
-        return $http({
-          method: 'GET',
-          url: scope.userSearchEndpoint,
-          params: {q: query},
-        }).then(function(response) {
-          return response.data.map(function(user){
-            return user
-          });
-        });
-      }
-
-      scope.onSelect = function(user) {
-        scope.selected = user.email;
-        circulationUserStore.user = user;
-      }
-    }
-
-    function templateUrl(element, attrs) {
-      return attrs.template;
-    }
+    return service;
   }
 })(angular);

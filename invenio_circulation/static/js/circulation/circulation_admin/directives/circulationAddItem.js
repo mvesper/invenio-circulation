@@ -23,5 +23,34 @@
 
 
 (function (angular) {
-  angular.module('circulationSettings', []);
+  // Setup
+  angular
+    .module('circulation')
+    .directive('circulationAddItem', circulationAddItem);
+
+  circulationAddItem.$inject = ['circulationItemStore'];
+
+  function circulationAddItem(circulationItemStore) {
+    var directive = {
+      link: link,
+      scope: {
+        item: '=', 
+      },
+      templateUrl: templateUrl,
+    };
+
+    return directive;
+
+    function link(scope, element, attributes) {
+      scope.addItem = addItem;
+
+      function addItem() {
+        circulationItemStore.items.push(scope.item);
+      }
+    }
+
+    function templateUrl(element, attrs) {
+      return attrs.template;
+    }
+  }
 })(angular);

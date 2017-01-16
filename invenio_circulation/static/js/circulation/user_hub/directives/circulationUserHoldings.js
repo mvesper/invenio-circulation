@@ -41,6 +41,9 @@
 
     function link(scope, element, attributes) {
       scope.requestedEndDate = '',
+      scope.extend = extend;
+      scope.lose = lose;
+      scope.cancel = cancel;
 
       $http({
         method: 'GET',
@@ -56,7 +59,7 @@
         scope.requests = circulationUserHoldingsStore.requests;
       });
 
-      scope.extend = function(itemId) {
+      function extend(itemId) {
         var data = {
           item_id: itemId,
         };
@@ -76,7 +79,7 @@
 
       };
 
-      scope.lose = function(itemId) {
+      function lose(itemId) {
         $http({
           method: 'POST',
           url: attributes.loseEndpoint,
@@ -90,7 +93,7 @@
         });
       };
 
-      scope.cancel = function(itemId, holdId) {
+      function cancel(itemId, holdId) {
         $http({
           method: 'POST',
           url: attributes.cancelEndpoint,

@@ -22,7 +22,13 @@
  */
 
 
-(function (angular) {
-  angular.module('circulationItemBasket',
-    ['circulationUserSearch', 'circulationSettings']);
-})(angular);
+require([
+    'node_modules/angular/angular',
+    'js/circulation/user_hub/circulationUserHub',
+  ], function() {
+    angular.element(document).ready(function() {
+      angular.bootstrap(
+        document.getElementById("invenio-circulation"), ['circulationUserHub']
+      );
+    });
+});

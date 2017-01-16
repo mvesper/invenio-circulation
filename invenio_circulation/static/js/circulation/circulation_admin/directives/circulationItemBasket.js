@@ -25,7 +25,7 @@
 (function (angular) {
   // Setup
   angular
-    .module('circulationItemBasket')
+    .module('circulation')
     .directive('circulationItemBasket', circulationItemBasket);
 
   circulationItemBasket.$inject = [
@@ -51,22 +51,30 @@
 
     function link(scope, element, attributes) {
       scope.items = circulationItemStore.items;
-      scope.remove = function(index) {
+      scope.remove = remove;
+      scope.loan = loan;
+      scope.request = request;
+      scope.return = returnItem;
+
+      function remove(index) {
         circulationItemStore.items.splice(index, 1);
       }
-      scope.loan = function() {
+
+      function loan() {
         var data = {
           'user_id': circulationUserStore.user.id,
         };
         performAction(attributes.loanEndpoint, data);
       }
-      scope.request = function() {
+
+      function request() {
         var data = {
           'user_id': circulationUserStore.user.id,
         };
         performAction(attributes.requestEndpoint, data);
       }
-      scope.return = function() {
+
+      function returnItem() {
         var data = {};
         performAction(attributes.returnEndpoint, data);
       }

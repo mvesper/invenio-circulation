@@ -23,5 +23,28 @@
 
 
 (function (angular) {
-  angular.module('circulationUserSearch', ['ui.bootstrap']);
+  // Setup
+  angular
+    .module('circulation')
+    .directive('circulationSettings', circulationSettings);
+
+  circulationSettings.$inject = ['circulationSettingsStore'];
+
+  function circulationSettings(circulationSettingsStore) {
+    var directive = {
+      link: link,
+      scope: true,
+      templateUrl: templateUrl,
+    };
+
+    return directive;
+
+    function link(scope, element, attributes) {
+      scope.settings = circulationSettingsStore.settings;
+    }
+
+    function templateUrl(element, attrs) {
+      return attrs.template;
+    }
+  }
 })(angular);

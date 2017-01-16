@@ -22,43 +22,17 @@
  */
 
 
-(function (angular) {
-  // Setup
-  angular
-    .module('circulationSettings')
-    .factory('circulationSettingsStore', circulationSettingsStore);
-
-  function circulationSettingsStore() {
-    var settings = {
-      startDate: '',
-      endDate: '',
-      delivery: ['mail', 'pickup'],
-      selectedDelivery: 'mail',
-      waitlist: false,
-    };
-
-    var service = {
-      settings: settings,
-      getPayload: getPayload,
-    };
-
-    return service;
-
-    function getPayload() {
-      var data = {
-        'start_date': settings.startDate,
-        'end_date': settings.endDate,
-        'delivery': settings.selectedDelivery,
-        'waitlist': settings.waitlist,
-      }
-
-      angular.forEach(data, function(value, key) {
-        if (value == '' || value == null) {
-          delete data[key];
-        }
-      });
-
-      return data;
-    }
-  }
-})(angular);
+require([
+    'node_modules/angular/angular.js',
+    'node_modules/invenio-search-js/dist/invenio-search-js',
+    'js/circulation/circulation_admin/circulation',
+  ], function() {
+    // When the DOM is ready bootstrap the `invenio-search-js`
+    angular.element(document).ready(function() {
+      angular.bootstrap(
+        document.getElementById("invenio-search"), [
+          'invenioSearch', 'circulation',
+        ]
+      );
+    });
+});
