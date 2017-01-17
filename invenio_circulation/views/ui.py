@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -21,6 +21,9 @@
 
 from flask import Blueprint, render_template
 
+from invenio_accounts.models import User
+
+
 blueprint = Blueprint(
     'circulation',
     __name__,
@@ -38,5 +41,16 @@ def index():
 
 @blueprint.route('/user/', methods=['GET'])
 def user_hub():
-    """Circulation index page."""
+    """Circulation user hub page."""
     return render_template('invenio_circulation/user_hub.html')
+
+
+@blueprint.route('/admin/user/<user_id>', methods=['GET'])
+def admin_user_view(user_id):
+    """Circulation admin user hub page."""
+    user = User.query.filter(User.id == user_id).scalar()
+    if not user:
+        return '', 404
+
+    return render_template('invenio_circulation/admin_user_hub.html',
+                           user=user)

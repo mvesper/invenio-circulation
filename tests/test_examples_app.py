@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -90,3 +90,17 @@ def test_example_app(example_app):
         subprocess.check_output(cmd, shell=True).decode('utf-8')
     )
     assert output and 'hits' in output and 'hits' in output['hits']
+
+    # user hub page
+    cmd = 'curl http://localhost:5000/circulation/user/'
+    output = subprocess.check_output(cmd, shell=True).decode('utf-8')
+    assert 'circulation-user-holdings' in output
+
+    # admin user hub page
+    cmd = 'curl http://localhost:5000/circulation/admin/user/1'
+    output = subprocess.check_output(cmd, shell=True).decode('utf-8')
+    assert 'user-info' in output and 'circulation-user-holdings' in output
+
+    cmd = 'curl http://localhost:5000/circulation/admin/user/1000'
+    output = subprocess.check_output(cmd, shell=True).decode('utf-8')
+    assert output == ''

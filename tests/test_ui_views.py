@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -27,11 +27,26 @@
 from flask import url_for
 
 
-def test_receiver_base(app, build_assets):
+def test_receiver_base(app, build_assets, user):
     """Test UI view index page."""
     with app.test_request_context():
         with app.test_client() as client:
+            # admin page
             url = url_for('circulation.index')
             res = client.get(url)
-
             assert res.status_code == 200
+
+            # user hub page
+            url = url_for('circulation.user_hub')
+            res = client.get(url)
+            assert res.status_code == 200
+
+            # admin user hub page
+            url = url_for('circulation.admin_user_view', user_id=user.id)
+            res = client.get(url)
+            assert res.status_code == 200
+
+            # admin user hub page not existing user_id
+            url = url_for('circulation.admin_user_view', user_id=user.id+1000)
+            res = client.get(url)
+            assert res.status_code == 404
