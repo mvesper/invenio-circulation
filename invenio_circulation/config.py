@@ -19,6 +19,8 @@
 
 """Invenio circulation configuration file."""
 
+import datetime
+
 
 CIRCULATION_EMAIL_SENDER = None
 CIRCULATION_LOAN_PERIOD = 28
@@ -94,3 +96,66 @@ CIRCULATION_ACTION_CANCEL_URL = \
     '/api/hooks/receivers/circulation_cancel/events/'
 
 CIRCULATION_USER_HUB_QUERY = '_circulation.holdings.user_id:'
+
+
+def latest_loans_query():
+    today = datetime.date.today().isoformat()
+    return ('_circulation.status:on_loan AND '
+            '_circulation.holdings.start_date:1970-01-01->{0} AND '
+            '_circulation.holdings.end_date:{0}->9999-01-01').format(today)
+
+
+def overdue_loans_query():
+    yesterday = (datetime.date.today() -
+                 datetime.timedelta(days=1)).isoformat()
+    return ('_circulation.status:on_loan AND '
+            '_circulation.holdings.end_date:1970-01-01->{0}').format(yesterday)
+
+
+def items_on_shelf_with_holds_query():
+    today = datetime.date.today().isoformat()
+    return ('_circulation.status:on_shelf AND '
+            '_circulation.holdings.start_date:{0}->9999-01-01').format(today)
+
+
+def items_on_loan_with_holds_query():
+    today = datetime.date.today().isoformat()
+    return ('_circulation.status:on_loan AND '
+            '_circulation.holdings.start_date:{0}->9999-01-01').format(today)
+
+
+def overdue_loans_with_holds_query():
+    today = datetime.date.today()
+    yesterday = today - datetime.timedelta(days=1)
+    return (
+        '_circulation.status:on_loan AND '
+        '_circulation.holdings.end_date:1970-01-01->{0}'
+        '_circulation.holdings.start_date:{1}->9999-01-01'
+    ).format(yesterday.isoformat(), today.isoformat())
+
+
+CIRCULATION_LISTS = {
+    'latest_loans': {
+        'template': 'templates/invenio_circulation/lists/latest-loans.html',
+        'query': latest_loans_query,
+    },
+    'overdue_loans': {
+        'template': 'templates/invenio_circulation/lists/overdue-loans.html',
+        'query': overdue_loans_query,
+    },
+    'items_on_shelf_with_holds': {
+        'template': ('templates/invenio_circulation/lists/'
+                     'items-on-shelf-with-holds.html'),
+        'query': items_on_shelf_with_holds_query,
+    },
+    'items_on_loan_with_holds': {
+        'template': ('templates/invenio_circulation/lists/'
+                     'items-on-loan-with-holds.html'),
+        'query': items_on_loan_with_holds_query,
+    },
+    'overdue_loans_with_holds': {
+        'template': ('templates/invenio_circulation/lists/'
+                     'overdue-loans-with-holds.html'),
+        'query': overdue_loans_with_holds_query,
+    },
+}

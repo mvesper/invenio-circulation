@@ -140,6 +140,8 @@ setup(
             'invenio_circulation_js = invenio_circulation.bundles:js',
             'invenio_circulation_user_hub_js = '
             'invenio_circulation.bundles:user_hub_js',
+            'invenio_circulation_lists_js = '
+            'invenio_circulation.bundles:lists_js',
         ],
         'invenio_base.blueprints': [
             'circulation = invenio_circulation.views.ui:blueprint'

@@ -71,3 +71,21 @@ user_hub_js = NpmBundle(
         'angular': '~1.4.8',
     }
 )
+
+lists_js = NpmBundle(
+    'node_modules/almond/almond.js',
+    'node_modules/angular/angular.js',
+    'node_modules/angular-ui-bootstrap/dist/ui-bootstrap.js',
+    'js/circulation/circulation_admin/circulation.js',
+    'js/circulation/circulation_admin/factories/circulationItemStore.js',
+    'js/circulation/lists/lists_app.js',
+    'js/circulation/lists/circulationLists.js',
+    'js/circulation/lists/directives/circulationList.js',
+    filters='requirejs',
+    output='gen/circulation_lists.%(version)s.js',
+    npm={
+        'almond': '~0.3.1',
+        'angular': '~1.4.8',
+        'angular-route': '~1.6.1',
+    }
+)

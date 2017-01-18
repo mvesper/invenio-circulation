@@ -19,9 +19,11 @@
 
 """Invenio-Circulation interface."""
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, url_for
 
 from invenio_accounts.models import User
+
+from ..config import CIRCULATION_LISTS
 
 
 blueprint = Blueprint(
@@ -54,3 +56,12 @@ def admin_user_view(user_id):
 
     return render_template('invenio_circulation/admin_user_hub.html',
                            user=user)
+
+
+@blueprint.route('/list/<list_name>', methods=['GET'])
+def lists(list_name):
+    if list_name not in CIRCULATION_LISTS:
+        return '', 404
+
+    return render_template('invenio_circulation/lists.html',
+                           list_name=list_name)
